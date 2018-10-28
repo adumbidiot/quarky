@@ -1,20 +1,19 @@
 extern crate serenity;
 extern crate rand;
-#[macro_use]
+//#[macro_use]
 extern crate serde_json;
 
 use serenity::client::{Client, EventHandler, Context};
-use serenity::framework::standard::{StandardFramework, Command, Args}; 
-use serenity::framework::standard::CommandOptions;
-use serenity::model::channel::Message;
+use serenity::framework::standard::{StandardFramework}; 
 use serenity::model::gateway::Ready;
 use serenity::model::gateway::Game;
 use std::fs::File;
 use std::io::Read;
-use std::sync::Arc;
 use rand::Rng;
 
 struct Handler;
+
+mod commands;
 
 impl EventHandler for Handler {
 	fn ready(&self, ctx: Context, ready: Ready) {
@@ -34,34 +33,6 @@ impl EventHandler for Handler {
 			"content": "hi"
 		}));*/
     }
-}
-
-struct Ping {
-	options: Arc<CommandOptions>,
-}
-
-impl Ping {
-	pub fn new() -> Self {
-		let mut opts = CommandOptions::default();
-		opts.allowed_roles.push("bot".to_string());
-		
-		let cmd = Ping {
-			options: Arc::from(opts),
-		};
-		
-		return cmd;
-	}
-}
-
-impl Command for Ping {
-	fn execute(&self, _: &mut Context, msg: &Message, _: Args) -> Result<(), serenity::framework::standard::CommandError> {
-		msg.channel_id.say("pong")?;
-		return Ok(());
-	}
-	
-	fn options(&self) -> Arc<CommandOptions> {
-		return self.options.clone();
-	}
 }
 
 fn get_token() -> Option<String>{
@@ -88,7 +59,7 @@ fn main(){
 		.configure(|c|{
 			c.prefix("~")
 		})
-		.cmd("ping", Ping::new());
+		.cmd("ping", commands::ping::Ping::new());
 		
 	client.with_framework(framework);
 	
