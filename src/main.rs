@@ -1,19 +1,27 @@
 extern crate serenity;
 extern crate rand;
-//#[macro_use]
+#[macro_use]
 extern crate serde_json;
+extern crate clokwerk;
 
 use serenity::client::{Client, EventHandler, Context};
-use serenity::framework::standard::{StandardFramework}; 
-use serenity::model::gateway::Ready;
-use serenity::model::gateway::Game;
+use serenity::framework::standard::StandardFramework; 
+use serenity::model::gateway::{Ready, Game};
+
 use std::fs::File;
 use std::io::Read;
+use std::time::Duration;
+
 use rand::Rng;
 
-struct Handler;
+use clokwerk::Scheduler;
+use clokwerk::Interval::Monday;
 
 mod commands;
+
+
+
+struct Handler;
 
 impl EventHandler for Handler {
 	fn ready(&self, ctx: Context, ready: Ready) {
@@ -51,6 +59,7 @@ fn get_token() -> Option<String>{
 }
 
 fn main(){
+	println!("[INFO] Locating Token...");
 	let token = get_token().expect("Could not find Token");
 	
 	let mut client = Client::new(&token, Handler).expect("Error creating client");
@@ -63,8 +72,22 @@ fn main(){
 		
 	client.with_framework(framework);
 	
-	println!("[INFO] Logging in...");
+	println!("[INFO] Starting Event Scheduler...");
+	//TODO: Wrap in arc and rwlock for dynamically adding and removing events
+	let mut scheduler = Scheduler::new();
+	scheduler
+		.every(Monday)
+		.at("12:00:00")
+		.run(||{
+			//TODO: Dynamically retrive channel "announcements" for EACH guild and play message
+			//TODO: Ensure client is started and connected before running. Maybe manually start/manage own thread?
+			serenity::http::raw::send_message(223233237281931268, &json!({
+				"content": "Robotics Club after school today!"
+			}));
+		});
+	let event_thread_handle = scheduler.watch_thread(Duration::from_millis(1000000));
 	
+	println!("[INFO] Logging in...");
 	if let Err(why) = client.start() {
         println!("[Error] {:?}", why);
     }
