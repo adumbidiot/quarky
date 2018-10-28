@@ -461,6 +461,7 @@ name = "quarky"
 version = "0.1.0"
 dependencies = [
  "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.32 (registry+https://github.com/rust-lang/crates.io-index)",
  "serenity 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

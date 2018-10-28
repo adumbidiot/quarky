@@ -1,5 +1,7 @@
 extern crate serenity;
 extern crate rand;
+#[macro_use]
+extern crate serde_json;
 
 use serenity::client::{Client, EventHandler, Context};
 use serenity::framework::standard::{StandardFramework, Command, Args}; 
@@ -28,6 +30,9 @@ impl EventHandler for Handler {
 		
 		println!("[INFO] Choosing Game State {}", random_number);
         println!("[INFO] {} is connected!", ready.user.name);
+		/*serenity::http::raw::send_message(223233237281931268, &json!({
+			"content": "hi"
+		}));*/
     }
 }
 
@@ -38,7 +43,7 @@ struct Ping {
 impl Ping {
 	pub fn new() -> Self {
 		let mut opts = CommandOptions::default();
-		opts.allowed_roles.push("Admin".to_string());
+		opts.allowed_roles.push("bot".to_string());
 		
 		let cmd = Ping {
 			options: Arc::from(opts),
@@ -71,7 +76,6 @@ fn get_token() -> Option<String>{
 		return Some(token);
 	}
 	
-	//&std::env::var("DISCORD_TOKEN").expect("token")
 	return None;
 }
 
