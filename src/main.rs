@@ -79,13 +79,17 @@ fn main(){
 		})
 		.cmd("ping", commands::ping::Ping::new())
 		.cmd("announce", commands::announce::Announce::new())
-		.help(help_commands::plain);
+		.help(help_commands::plain)
+		.on_dispatch_error(|_, msg, error|{
+			println!("[ERROR] {:?}{}", error, msg.content);
+		});
 		
 	client.with_framework(framework);
 	
 	println!("[INFO] Starting Event Scheduler...");
 	//TODO: Wrap in arc and rwlock for dynamically adding and removing events
 	let mut scheduler = Scheduler::new();
+	
 	scheduler
 		.every(Monday)
 		.at("12:00:00")
