@@ -89,31 +89,33 @@ fn main(){
 	println!("[INFO] Starting Event Scheduler...");
 	//TODO: Wrap in arc and rwlock for dynamically adding and removing events
 	let mut scheduler = Scheduler::new();
-	
+	const AFTER_SCHOOL_ANNOUNCE: &str = "@everyone Robotics Club after school today!";
+	const LUNCH_ANNOUNCE: &str = "@everyone Robotics Club during plus and lunch today!";
+	const NOON: &str = "12:00:00";
 	scheduler
 		.every(Monday)
-		.at("12:00:00")
+		.at(NOON)
 		.run(||{
 			//TODO: Ensure client is started and connected before running. Maybe manually start/manage own thread?
-			announce_discord("Robotics Club after school today!");
+			announce_discord(AFTER_SCHOOL_ANNOUNCE);
 		});
 	scheduler
 		.every(Tuesday)
-		.at("12:00:00")
+		.at(NOON)
 		.run(||{
-			announce_discord("Robotics Club during plus and lunch today!");
+			announce_discord(LUNCH_ANNOUNCE);
 		});
 	scheduler
 		.every(Thursday)
-		.at("12:00:00")
+		.at(NOON)
 		.run(||{
-			announce_discord("Robotics Club during plus and lunch today!");
+			announce_discord(LUNCH_ANNOUNCE);
 		});	
 	scheduler
 		.every(Friday)
-		.at("12:00:00")
+		.at(NOON)
 		.run(||{
-			announce_discord("Robotics Club after school today!");
+			announce_discord(AFTER_SCHOOL_ANNOUNCE);
 		});
 	
 	let event_thread_handle = scheduler.watch_thread(Duration::from_secs(60 * 5));
