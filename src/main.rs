@@ -2,6 +2,11 @@ extern crate serenity;
 extern crate rand;
 extern crate serde_json;
 extern crate clokwerk;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate toml;
+
 
 mod commands;
 
@@ -19,6 +24,8 @@ use rand::Rng;
 
 use clokwerk::Scheduler;
 use clokwerk::Interval::{Monday, Tuesday, Thursday, Friday};
+
+use std::path::Path;
 
 use self::commands::announce::announce_discord;
 
@@ -50,28 +57,27 @@ impl EventHandler for Handler {
 	}
 }
 
-fn get_token() -> Option<String>{
-	if let Ok(mut file) = File::open("token.txt"){
-		let mut buffer = String::new();
-		if file.read_to_string(&mut buffer).is_ok(){
-			return Some(buffer);
-		}
+#[derive(Deserialize, Debug)]
+struct Config { //TODO: Validate function
+	token: String
+}
+
+fn load_config(p: &Path) -> Option<Config>{ //TODO: Result
+	if !p.exists() {
+		return None;
 	}
 	
-	if let Ok(token) = std::env::var("DISCORD_TOKEN"){
-		return Some(token);
-	}
-	
-	return None;
+	let data = std::fs::read(p).ok()?;
+	let config: Config = toml::from_slice(&data).ok()?;
+	return Some(config);
 }
 
 
-
 fn main(){
-	println!("[INFO] Locating Token...");
-	let token = get_token().expect("Could not find Token");
+	println!("[INFO] Loading Config.toml...");
+	let config = load_config(Path::new("./Config.toml")).expect("Could not load Config.toml");
 	
-	let mut client = Client::new(&token, Handler).expect("Error creating client");
+	let mut client = Client::new(&config.token, Handler).expect("Error creating client");
 	
 	let framework = StandardFramework::new()
 		.configure(|c|{
@@ -125,5 +131,5 @@ fn main(){
         println!("[ERROR] {:?}", why);
     }
 	
-	//println!("[INFO] Shutting down...");
+	println!("[INFO] Shutting down...");
 }
