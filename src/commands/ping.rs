@@ -1,43 +1,16 @@
 use serenity::{
     client::Context,
     framework::standard::{
+        macros::command,
         Args,
-        Command,
-        CommandOptions,
+        CommandResult,
     },
     model::channel::Message,
 };
-use std::sync::Arc;
 
-pub struct Ping {
-    options: Arc<CommandOptions>,
-}
-
-impl Ping {
-    pub fn new() -> Self {
-        let mut opts = CommandOptions::default();
-        opts.allowed_roles.push("bot".to_string());
-
-        let cmd = Ping {
-            options: Arc::from(opts),
-        };
-
-        return cmd;
-    }
-}
-
-impl Command for Ping {
-    fn execute(
-        &self,
-        _: &mut Context,
-        msg: &Message,
-        _: Args,
-    ) -> Result<(), serenity::framework::standard::CommandError> {
-        msg.channel_id.say("pong")?;
-        return Ok(());
-    }
-
-    fn options(&self) -> Arc<CommandOptions> {
-        return self.options.clone();
-    }
+#[command]
+#[description = "Respond with pong"]
+pub fn ping(ctx: &mut Context, msg: &Message, _args: Args) -> CommandResult {
+    msg.channel_id.say(&ctx.http, "pong")?;
+    Ok(())
 }
