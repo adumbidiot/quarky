@@ -1,4 +1,5 @@
 mod commands;
+mod config;
 
 use clokwerk::{
     Interval::{
@@ -14,8 +15,8 @@ use commands::{
     ANNOUNCE_COMMAND,
     PING_COMMAND,
 };
+use config::load_config;
 use rand::Rng;
-use serde::Deserialize;
 use serenity::{
     client::{
         Client,
@@ -100,23 +101,6 @@ impl EventHandler for Handler {
     fn message(&self, _ctx: Context, _msg: Message) {}
 }
 
-#[derive(Deserialize, Debug)]
-struct Config {
-    //TODO: Validate function
-    token: String,
-}
-
-fn load_config(p: &Path) -> Option<Config> {
-    //TODO: Result
-    if !p.exists() {
-        return None;
-    }
-
-    let data = std::fs::read(p).ok()?;
-    let config: Config = toml::from_slice(&data).ok()?;
-    Some(config)
-}
-
 fn main() {
     println!("[INFO] Loading Config.toml...");
     let config = load_config(Path::new("./Config.toml")).expect("Could not load Config.toml");
@@ -130,7 +114,6 @@ fn main() {
         .on_dispatch_error(|_, msg, error| {
             println!("[ERROR] {:?}{}", error, msg.content);
         });
-    //.help(help_commands::plain)
 
     client.with_framework(framework);
 
