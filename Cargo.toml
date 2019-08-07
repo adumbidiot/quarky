@@ -1,6 +1,6 @@
 [package]
 name = "quarky"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["adumbidiot <nathaniel.daniel23@outlook.com>"]
 edition = "2018"
 
@@ -12,3 +12,5 @@ clokwerk = "0.1"
 toml = "0.4"
 serde_derive = "1.0"
 serde = "1"
+chrono = "0.4"
+schoology = {git="https://github.com/adumbidiot/schoology-rs"}

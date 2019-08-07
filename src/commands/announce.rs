@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use serenity::framework::standard::{Args, CommandOptions, Command};
+use serenity::framework::standard::CommandError;
 use serenity::client::Context;
 use serenity::model::channel::Message;
 use serenity::model::channel::ChannelType;
@@ -28,9 +29,10 @@ impl Announce {
 }
 
 impl Command for Announce {
-	fn execute(&self, _: &mut Context, msg: &Message, mut args: Args) -> Result<(), serenity::framework::standard::CommandError> {
+	fn execute(&self, _: &mut Context, msg: &Message, mut args: Args) -> Result<(), CommandError> {
 		let announcement = args.single_quoted::<String>().unwrap();
-		announce_discord(&announcement);
+		msg.channel_id.say("Recieved request. Announcing...")?;
+		announce_discord(&announcement)?;
 		return Ok(());
 	}
 	
@@ -39,7 +41,7 @@ impl Command for Announce {
 	}
 }
 
-pub fn announce_discord(announcement: &str){
+pub fn announce_discord(announcement: &str) -> Result<(), CommandError>{
 	let guilds = &CACHE.read().guilds;
 	if guilds.len() > 0 {
 		for value in guilds.values(){
@@ -48,9 +50,10 @@ pub fn announce_discord(announcement: &str){
 				let channel = value.read();
 				if channel.name == "announcements" && channel.kind == ChannelType::Text {
 					println!(r#"[INFO] Announcing "{}" to discord channel "{}/{}""#, announcement, guild.name, channel.name);
-					channel.say(announcement);
+					channel.say(announcement)?;
 				}
 			}
 		}
 	}
+	return Ok(());
 }
