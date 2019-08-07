@@ -1,12 +1,3 @@
-extern crate clokwerk;
-extern crate rand;
-extern crate serde_json;
-extern crate serenity;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate toml;
-
 mod commands;
 
 use serenity::{
@@ -27,6 +18,7 @@ use serenity::{
         },
     },
 };
+use serde::{Serialize, Deserialize};
 
 use std::{
     fs::File,
