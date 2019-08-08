@@ -27,33 +27,27 @@ pub fn announce(ctx: &mut Context, _msg: &Message, mut args: Args) -> CommandRes
 }
 
 pub fn announce_discord(http: &Http, cache: &Cache, data: &str) -> CommandResult {
-    for (channel_id, channel_name, guild_name) in cache
+    for guild in cache
         .all_guilds()
         .iter()
         .filter_map(|&guild_id| cache.guild(guild_id))
-        .filter_map(|guild| {
-            let guild = guild.read();
-            let channel =
-                guild
-                    .channels
-                    .values()
-                    .map(|channel| channel.read())
-                    .find(|channel| {
-                        channel.name == "announcements" && channel.kind == ChannelType::Text
-                    })?;
-            Some((
-                channel.id,
-                channel.name().to_string(),
-                guild.name.to_string(),
-            ))
-        })
     {
-        println!(
-            r#"[INFO] Announcing "{}" to discord channel "{}/{}""#,
-            data, guild_name, channel_name
-        );
-        channel_id.say(http, data)?;
-    }
+        let guild = guild.read();
+        let channel = guild
+            .channels
+            .values()
+            .map(|channel| channel.read())
+            .find(|channel| channel.name == "announcements" && channel.kind == ChannelType::Text);
+        if let Some(channel) = channel {
+            println!(
+                r#"[INFO] Announcing "{}" to discord channel "{}/{}""#,
+                data,
+                guild.name,
+                channel.name()
+            );
 
+            let _ = channel.say(&http, data).is_ok(); //Don't let one failure stop the fun
+        }
+    }
     Ok(())
 }

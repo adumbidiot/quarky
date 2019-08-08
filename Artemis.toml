@@ -1,0 +1,4 @@
+[Service] 
+name = "quarky"
+start = "/home/pi/.cargo/bin/cargo +stable run --release"
+update = "git pull"
