@@ -12,12 +12,21 @@ use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum RedditError {
     Network,
     InvalidStatusCode(u16),
     NotFound,
-    JsonError,
+    JsonError(serde_json::Error, Option<bytes::Bytes>),
+}
+
+impl RedditError {
+    pub fn is_not_found(&self) -> bool {
+        match self {
+            RedditError::NotFound => true,
+            _ => false,
+        }
+    }
 }
 
 pub type RedditResult<T> = Result<T, RedditError>;
@@ -66,25 +75,30 @@ impl Client {
                 Ok(res)
             })
             .and_then(|res| res.into_body().concat2().map_err(|_| RedditError::Network))
-            .and_then(|body| serde_json::from_slice(&body).map_err(|_| RedditError::JsonError))
+            .and_then(|body| {
+                serde_json::from_slice(&body)
+                    .map_err(|e| RedditError::JsonError(e, Some(body.into_bytes())))
+            })
     }
 }
 
+// From https://github.com/reddit-archive/reddit/wiki/json
 #[derive(Debug, Deserialize)]
-pub struct SubRedditListing {
-    pub kind: String,
-    pub data: SubRedditListingData,
+pub struct Listing<T> {
+    pub before: Option<String>,
+    pub after: Option<String>,
+    pub modhash: String,
+    pub children: Vec<T>,
 
     #[serde(flatten)]
     pub unknown: HashMap<String, Value>,
 }
 
+// Hand-Made
 #[derive(Debug, Deserialize)]
-pub struct SubRedditListingData {
-    pub after: String,
-    pub before: Option<String>,
-    pub children: Vec<SubRedditEntry>,
-    pub dist: u32,
+pub struct SubRedditListing {
+    pub kind: String,
+    pub data: Listing<SubRedditEntry>,
 
     #[serde(flatten)]
     pub unknown: HashMap<String, Value>,
@@ -155,7 +169,7 @@ pub struct SubRedditEntryData {
     pub subreddit_name_prefixed: String,
     pub subreddit_subscribers: u64,
     pub subreddit_type: String,
-    pub suggested_sort: String,
+    pub suggested_sort: Option<String>,
     pub thumbnail: String,
     pub thumbnail_height: u32,
     pub thumbnail_width: u32,
