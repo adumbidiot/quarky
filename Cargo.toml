@@ -1,6 +1,6 @@
 [package]
 name = "quarky"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["adumbidiot <nathaniel.daniel23@outlook.com>"]
 edition = "2018"
 publish = false
@@ -8,10 +8,15 @@ publish = false
 [dependencies]
 serenity = "0.6"
 rand = "0.7"
-serde_json = "1"
+serde_json = "1.0"
 clokwerk = "0.2"
 toml = "0.5"
-serde = { version = "1", features = [ "derive" ] }
+serde = { version = "1.0", features = [ "derive" ] }
+tokio = "0.1"
+parking_lot = "0.9"
+
+# Local
+reddit = { path = "./lib/reddit" }
 
 [profile.release]
 lto = true

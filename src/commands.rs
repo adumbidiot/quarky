@@ -1,5 +1,9 @@
 pub mod announce;
 pub mod ping;
+pub mod reddit;
 
-pub use announce::ANNOUNCE_COMMAND;
-pub use ping::PING_COMMAND;
+pub use crate::commands::{
+    announce::ANNOUNCE_COMMAND,
+    ping::PING_COMMAND,
+    reddit::REDDIT_COMMAND,
+};

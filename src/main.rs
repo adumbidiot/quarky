@@ -14,8 +14,10 @@ use commands::{
     announce::announce_discord,
     ANNOUNCE_COMMAND,
     PING_COMMAND,
+    REDDIT_COMMAND,
 };
 use config::load_config;
+use parking_lot::RwLock;
 use rand::Rng;
 use serenity::{
     client::{
@@ -43,6 +45,7 @@ use serenity::{
         },
         id::UserId,
     },
+    prelude::TypeMapKey,
 };
 use std::{
     collections::HashSet,
@@ -57,11 +60,12 @@ use std::{
     thread,
     time::Duration,
 };
+use tokio::prelude::Future;
 
 group!({
     name: "general",
     options: {},
-    commands: [ping, announce]
+    commands: [ping, announce, reddit]
 });
 
 #[help]
@@ -74,6 +78,18 @@ fn help(
     owners: HashSet<UserId>,
 ) -> CommandResult {
     help_commands::with_embeds(context, msg, args, &help_options, groups, owners)
+}
+
+struct TokioRuntimeKey;
+
+impl TypeMapKey for TokioRuntimeKey {
+    type Value = Arc<RwLock<tokio::runtime::Runtime>>;
+}
+
+struct RedditClientKey;
+
+impl TypeMapKey for RedditClientKey {
+    type Value = Arc<reddit::Client>;
 }
 
 struct Handler;
@@ -103,10 +119,18 @@ impl EventHandler for Handler {
 
 fn main() {
     println!("[INFO] Loading Config.toml...");
-    let config = load_config(Path::new("./Config.toml")).expect("Could not load Config.toml");
+    let config_path = "./Config.toml";
+    let config = match load_config(Path::new(config_path)) {
+        Ok(config) => config,
+        Err(e) => {
+            println!("[ERROR] Error loading '{}': {:?}", config_path, e);
+            return;
+        }
+    };
 
     let mut client = Client::new(&config.token, Handler).expect("Error creating client");
 
+    //Init Framework
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("~"))
         .group(&GENERAL_GROUP)
@@ -117,6 +141,18 @@ fn main() {
 
     client.with_framework(framework);
 
+    let tokio_runtime = Arc::from(RwLock::from(
+        tokio::runtime::Runtime::new().expect("Error initializing tokio runtime"),
+    ));
+    client
+        .data
+        .write()
+        .insert::<TokioRuntimeKey>(tokio_runtime.clone());
+
+    let reddit_client = Arc::from(reddit::Client::new());
+    client.data.write().insert::<RedditClientKey>(reddit_client);
+
+    //Start Scheduler
     let http = client.cache_and_http.http.clone();
     let cache = client.cache_and_http.cache.clone();
 
@@ -158,7 +194,7 @@ fn main() {
 
     let frequency = Duration::from_secs(60 * 5);
     let stop = Arc::new(AtomicBool::new(false));
-    let _my_stop = stop.clone();
+    let my_stop = stop.clone();
     let handle = thread::spawn(move || {
         while !stop.load(Ordering::SeqCst) {
             scheduler.run_pending();
@@ -172,5 +208,14 @@ fn main() {
     }
 
     println!("[INFO] Shutting down...");
-    handle.join().unwrap();
+    drop(client); //Hopefully gets rid of all other Arcs...
+    Arc::try_unwrap(tokio_runtime) //TODO: Maybe make a wrapper so this isn't so easy to mess up
+        .expect("Should only be one arc left at this point")
+        .into_inner()
+        .shutdown_on_idle()
+        .wait()
+        .expect("Tokio Runtime could not exit safely");
+
+    my_stop.store(true, Ordering::SeqCst);
+    handle.join().unwrap(); //TODO: Actually manage the thread better
 }
