@@ -12,6 +12,7 @@ use clokwerk::{
 };
 use commands::{
     announce::announce_discord,
+    reddit::RedditClient,
     ANNOUNCE_COMMAND,
     PING_COMMAND,
     REDDIT_COMMAND,
@@ -89,7 +90,7 @@ impl TypeMapKey for TokioRuntimeKey {
 struct RedditClientKey;
 
 impl TypeMapKey for RedditClientKey {
-    type Value = Arc<reddit::Client>;
+    type Value = Arc<RedditClient>;
 }
 
 struct Handler;
@@ -149,7 +150,7 @@ fn main() {
         .write()
         .insert::<TokioRuntimeKey>(tokio_runtime.clone());
 
-    let reddit_client = Arc::from(reddit::Client::new());
+    let reddit_client = Arc::from(RedditClient::new());
     client.data.write().insert::<RedditClientKey>(reddit_client);
 
     //Start Scheduler

@@ -8,11 +8,13 @@ use reddit::{
     RedditError,
 };
 
+//25 is the default
+
 #[test]
 fn subreddit_dankmemes() {
     let client = Client::new();
     let fut = client
-        .get_subreddit("dankmemes")
+        .get_subreddit("dankmemes", 25)
         .map(|res| {
             println!(
                 "{}",
@@ -33,7 +35,7 @@ fn subreddit_dankmemes() {
 fn fake_subreddit() {
     let client = Client::new();
     let fut = client
-        .get_subreddit("gfdghfj")
+        .get_subreddit("gfdghfj", 25)
         .map(|_res| panic!("Should fail"))
         .map_err(|e| assert!(e.is_not_found()));
     drop(client);
@@ -44,7 +46,7 @@ fn fake_subreddit() {
 fn subreddit() {
     let client = Client::new();
     let fut = client
-        .get_subreddit("forbiddensnacks")
+        .get_subreddit("forbiddensnacks", 25)
         .map(|res| {
             println!(
                 "{}",

@@ -18,9 +18,9 @@ parking_lot = "0.9"
 # Local
 reddit = { path = "./lib/reddit" }
 
-[profile.release]
-lto = true
-codegen-units = 1
-debug = false
-opt-level = 3
-debug-assertions = false
+#[profile.release]
+#lto = true
+#codegen-units = 1
+#debug = false
+#opt-level = 3
+#debug-assertions = false

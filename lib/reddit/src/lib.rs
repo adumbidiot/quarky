@@ -17,7 +17,7 @@ pub enum RedditError {
     Network,
     InvalidStatusCode(u16),
     NotFound,
-    JsonError(serde_json::Error, Option<bytes::Bytes>),
+    Json(serde_json::Error, Option<bytes::Bytes>),
 }
 
 impl RedditError {
@@ -46,8 +46,9 @@ impl Client {
     pub fn get_subreddit(
         &self,
         subreddit: &str,
+		n: usize,
     ) -> impl Future<Item = SubRedditListing, Error = RedditError> {
-        let uri = format!("https://www.reddit.com/r/{}.json", subreddit)
+        let uri = format!("https://www.reddit.com/r/{}.json?limit={}", subreddit, n)
             .parse()
             .unwrap();
 
@@ -77,7 +78,7 @@ impl Client {
             .and_then(|res| res.into_body().concat2().map_err(|_| RedditError::Network))
             .and_then(|body| {
                 serde_json::from_slice(&body)
-                    .map_err(|e| RedditError::JsonError(e, Some(body.into_bytes())))
+                    .map_err(|e| RedditError::Json(e, Some(body.into_bytes())))
             })
     }
 }
@@ -191,4 +192,7 @@ pub enum PostHint {
 
     #[serde(rename = "link")]
     Link,
+	
+	#[serde(rename = "hosted:video")]
+	Video,
 }
