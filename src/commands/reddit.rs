@@ -99,16 +99,17 @@ impl RedditClient {
             .entry(String::from(subreddit))
             .or_default()
             .clone();
-			
+
         self.client.get_subreddit(&subreddit, 100).map(move |list| {
-            let posts = list
-                .data
-                .children
-                .into_iter()
-                .filter(|child| child.data.post_hint == PostHint::Image);
+            let posts = list.data.children.into_iter().filter(|child| {
+                child.data.post_hint == Some(PostHint::Image)
+                    || child.data.url.ends_with(".jpg")
+                    || child.data.url.ends_with(".png")
+                    || child.data.url.ends_with(".gif")
+            });
 
             let new_posts = map_arc.populate(posts);
-			println!("[INFO] Reddit Cache populated with {} new posts", new_posts);
+            println!("[INFO] Reddit Cache populated with {} new posts", new_posts);
 
             map_arc
         })

@@ -46,7 +46,7 @@ impl Client {
     pub fn get_subreddit(
         &self,
         subreddit: &str,
-		n: usize,
+        n: usize,
     ) -> impl Future<Item = SubRedditListing, Error = RedditError> {
         let uri = format!("https://www.reddit.com/r/{}.json?limit={}", subreddit, n)
             .parse()
@@ -122,9 +122,9 @@ pub struct SubRedditEntryData {
     pub author_flair_template_id: Option<String>,
     pub author_flair_text: Option<String>,
     pub author_flair_text_color: Option<String>,
-    pub author_flair_type: String,
-    pub author_fullname: String,
-    pub author_patreon_flair: bool,
+    pub author_flair_type: Option<String>,
+    pub author_fullname: Option<String>,
+    pub author_patreon_flair: Option<bool>,
     pub can_gild: bool,
     pub can_mod_post: bool,
     pub clicked: bool,
@@ -133,7 +133,7 @@ pub struct SubRedditEntryData {
     pub created_utc: f64,
     pub domain: String,
     pub downs: u64,
-    pub edited: bool,
+    pub edited: Value, // Can be a bool or a f32
     pub gilded: u32,
     pub hidden: bool,
     pub hide_score: bool,
@@ -154,11 +154,11 @@ pub struct SubRedditEntryData {
     pub num_comments: u32,
     pub num_crossposts: u32,
     pub over_18: bool,
-    pub parent_whitelist_status: String,
+    pub parent_whitelist_status: Option<String>,
     pub permalink: String,
     pub pinned: bool,
-    pub post_hint: PostHint,
-    pub pwls: u32,
+    pub post_hint: Option<PostHint>,
+    pub pwls: Option<u32>,
     pub quarantine: bool,
     pub saved: bool,
     pub score: u32,
@@ -172,14 +172,14 @@ pub struct SubRedditEntryData {
     pub subreddit_type: String,
     pub suggested_sort: Option<String>,
     pub thumbnail: String,
-    pub thumbnail_height: u32,
-    pub thumbnail_width: u32,
+    pub thumbnail_height: Option<u32>,
+    pub thumbnail_width: Option<u32>,
     pub title: String,
     pub ups: u32,
     pub url: String,
     pub visited: bool,
-    pub whitelist_status: String,
-    pub wls: u32,
+    pub whitelist_status: Option<String>,
+    pub wls: Option<u32>,
 
     #[serde(flatten)]
     pub unknown: HashMap<String, Value>,
@@ -192,7 +192,13 @@ pub enum PostHint {
 
     #[serde(rename = "link")]
     Link,
-	
-	#[serde(rename = "hosted:video")]
-	Video,
+
+    #[serde(rename = "hosted:video")]
+    HostedVideo,
+
+    #[serde(rename = "rich:video")]
+    RichVideo,
+
+    #[serde(rename = "self")]
+    DataSelf,
 }
