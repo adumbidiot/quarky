@@ -18,6 +18,9 @@ parking_lot = "0.9"
 # Local
 reddit = { path = "./lib/reddit" }
 
+[workspace]
+members = [ "lib/reddit" ]
+
 #[profile.release]
 #lto = true
 #codegen-units = 1
