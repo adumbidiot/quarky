@@ -14,17 +14,19 @@ const CORPUS: &str = include_str!("moviequotes.memorable_quotes.txt");
 
 lazy_static! {
     static ref QUOTES: Vec<Quote> = {
-        CORPUS
-            .split("\r\n\r\n")
+        let ret : Vec<_> = CORPUS
+            .split("\n\n")
             .filter_map(|el| {
-                let mut iter = el.trim().split("\r\n");
+                let mut iter = el.trim().lines();
                 Some(Quote {
                     movie: iter.next()?,
                     quote: iter.next()?,
                     extra: iter.next()?,
                 })
             })
-            .collect()
+            .collect();
+		println!("[INFO] Loaded {} movie quotes", ret.len());
+		ret
     };
 }
 
