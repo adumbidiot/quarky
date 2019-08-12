@@ -14,7 +14,7 @@ const CORPUS: &str = include_str!("moviequotes.memorable_quotes.txt");
 
 lazy_static! {
     static ref QUOTES: Vec<Quote> = {
-        let ret : Vec<_> = CORPUS
+        let ret: Vec<_> = CORPUS
             .split("\n\n")
             .filter_map(|el| {
                 let mut iter = el.trim().lines();
@@ -25,8 +25,8 @@ lazy_static! {
                 })
             })
             .collect();
-		println!("[INFO] Loaded {} movie quotes", ret.len());
-		ret
+        println!("[INFO] Loaded {} movie quotes", ret.len());
+        ret
     };
 }
 
@@ -41,8 +41,15 @@ struct Quote {
 #[description = "Respond with a random movie quote"]
 pub fn movie_quote(ctx: &mut Context, msg: &Message, _args: Args) -> CommandResult {
     let mut rng = rand::thread_rng();
-    let quote = QUOTES.choose(&mut rng).expect("Quote");
-    msg.channel_id
-        .say(&ctx.http, &format!("{}\n\t~ {}", quote.quote, quote.movie))?;
+    let quote = match QUOTES.choose(&mut rng) {
+        Some(el) => el,
+        None => {
+            msg.channel_id
+                .say(&ctx.http, "Error: Failed to load Quote Corpus")?;
+            return Ok(());
+        }
+    };
+    let res = format!("{}\n\t-{}", quote.quote, quote.movie);
+    msg.channel_id.say(&ctx.http, &res)?;
     Ok(())
 }
