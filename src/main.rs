@@ -36,6 +36,7 @@ use serenity::{
         Args,
         CommandGroup,
         CommandResult,
+        DispatchError,
         HelpOptions,
         StandardFramework,
     },
@@ -137,9 +138,17 @@ fn main() {
         .configure(|c| c.prefix("~"))
         .group(&GENERAL_GROUP)
         .help(&HELP)
-        .on_dispatch_error(|_, msg, error| {
-            println!("[ERROR] {:?}{}", error, msg.content);
-        });
+        .on_dispatch_error(|ctx, msg, error| {
+            if let DispatchError::Ratelimited(seconds) = error {
+                let _ = msg.channel_id.say(
+                    &ctx.http,
+                    &format!("Try this again in {} second(s).", seconds),
+                );
+            } else {
+                println!("[ERROR] {:?} {}", error, msg.content);
+            }
+        })
+        .bucket("simple", |b| b.delay(1));
 
     client.with_framework(framework);
 

@@ -4,10 +4,7 @@ use crate::{
 };
 use indexmap::IndexMap;
 use parking_lot::RwLock;
-use rand::{
-    seq::IteratorRandom,
-    Rng,
-};
+use rand::Rng;
 use reddit::{
     PostHint,
     RedditError,
@@ -140,7 +137,8 @@ impl RedditClient {
 }
 
 #[command]
-#[description = "Get a random post from a subreddit"]
+#[description("Get a random post from a subreddit")]
+#[bucket("simple")]
 #[min_args(1)]
 fn reddit(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
     let subreddit = args.single::<String>().unwrap();
