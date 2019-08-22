@@ -14,6 +14,7 @@ use commands::{
     announce::announce_discord,
     reddit::RedditClient,
     ANNOUNCE_COMMAND,
+    INVITE_COMMAND,
     MOVIE_QUOTE_COMMAND,
     PING_COMMAND,
     REDDIT_COMMAND,
@@ -70,7 +71,7 @@ use tokio::prelude::Future;
 group!({
     name: "general",
     options: {},
-    commands: [ping, announce, reddit, movie_quote, zalgo, vaporwave]
+    commands: [ping, announce, reddit, movie_quote, zalgo, vaporwave, invite]
 });
 
 #[help]
