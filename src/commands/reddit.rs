@@ -2,8 +2,12 @@ use crate::{
     RedditClientKey,
     TokioRuntimeKey,
 };
+use indexmap::IndexMap;
 use parking_lot::RwLock;
-use rand::seq::IteratorRandom;
+use rand::{
+    seq::IteratorRandom,
+    Rng,
+};
 use reddit::{
     PostHint,
     RedditError,
@@ -39,7 +43,7 @@ type SubRedditCache = Arc<RwLock<HashMap<String, EntryCache>>>;
 
 #[derive(Default, Clone)]
 struct EntryCache {
-    store: Arc<RwLock<HashMap<String, Arc<SubRedditEntryData>>>>,
+    store: Arc<RwLock<IndexMap<String, Arc<SubRedditEntryData>>>>,
     random_count: Arc<AtomicUsize>,
 }
 
@@ -62,12 +66,11 @@ impl EntryCache {
     fn get_random(&self) -> Option<Arc<SubRedditEntryData>> {
         self.random_count.fetch_add(1, Ordering::SeqCst);
         let mut rng = rand::thread_rng();
-        self.store
-            .read()
-            .iter()
-            .map(|(_, v)| v)
-            .choose(&mut rng)
-            .cloned()
+
+        let store = self.store.read();
+        let index = rng.gen_range(0, store.len());
+
+        store.get_index(index).map(|(_, v)| v).cloned()
     }
 
     fn needs_data(&self) -> bool {
@@ -141,6 +144,12 @@ impl RedditClient {
 #[min_args(1)]
 fn reddit(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
     let subreddit = args.single::<String>().unwrap();
+
+    let blacklist = ["gayporn"];
+    if blacklist.contains(&subreddit.as_str()) {
+        let _ = msg.channel_id.say(&ctx.http, "*Angry Barking Noises*")?;
+        return Ok(());
+    }
 
     let data_lock = ctx.data.read();
     let rt = data_lock.get::<TokioRuntimeKey>().unwrap();
