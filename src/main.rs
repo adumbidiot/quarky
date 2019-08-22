@@ -17,6 +17,7 @@ use commands::{
     MOVIE_QUOTE_COMMAND,
     PING_COMMAND,
     REDDIT_COMMAND,
+    VAPORWAVE_COMMAND,
     ZALGO_COMMAND,
 };
 use config::load_config;
@@ -69,7 +70,7 @@ use tokio::prelude::Future;
 group!({
     name: "general",
     options: {},
-    commands: [ping, announce, reddit, movie_quote, zalgo]
+    commands: [ping, announce, reddit, movie_quote, zalgo, vaporwave]
 });
 
 #[help]
