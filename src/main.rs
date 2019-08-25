@@ -13,19 +13,14 @@ use clokwerk::{
 use commands::{
     announce::announce_discord,
     reddit::RedditClient,
-    ANNOUNCE_COMMAND,
-    INVITE_COMMAND,
-    MOVIE_QUOTE_COMMAND,
-    PING_COMMAND,
-    REDDIT_COMMAND,
-    VAPORWAVE_COMMAND,
-    ZALGO_COMMAND,
+    *,
 };
 use config::load_config;
 use parking_lot::RwLock;
 use rand::Rng;
 use serenity::{
     client::{
+        bridge::voice::ClientVoiceManager,
         Client,
         Context,
         EventHandler,
@@ -44,14 +39,24 @@ use serenity::{
         StandardFramework,
     },
     model::{
-        channel::Message,
+        channel::{
+            Channel,
+            Message,
+        },
         gateway::{
             Activity,
             Ready,
         },
-        id::UserId,
+        id::{
+            GuildId,
+            UserId,
+        },
+        voice::VoiceState,
     },
-    prelude::TypeMapKey,
+    prelude::{
+        Mutex,
+        TypeMapKey,
+    },
 };
 use std::{
     collections::HashSet,
@@ -71,7 +76,7 @@ use tokio::prelude::Future;
 group!({
     name: "general",
     options: {},
-    commands: [ping, announce, reddit, movie_quote, zalgo, vaporwave, invite]
+    commands: [ping, announce, reddit, movie_quote, zalgo, vaporwave, invite, join, leave, play, stop]
 });
 
 #[help]
@@ -98,6 +103,12 @@ impl TypeMapKey for RedditClientKey {
     type Value = Arc<RedditClient>;
 }
 
+struct VoiceManagerKey;
+
+impl TypeMapKey for VoiceManagerKey {
+    type Value = Arc<Mutex<ClientVoiceManager>>;
+}
+
 struct Handler;
 
 impl EventHandler for Handler {
@@ -121,6 +132,50 @@ impl EventHandler for Handler {
     }
 
     fn message(&self, _ctx: Context, _msg: Message) {}
+
+    fn voice_state_update(
+        &self,
+        ctx: Context,
+        _: Option<GuildId>,
+        old: Option<VoiceState>,
+        new: VoiceState,
+    ) {
+        if let Some(old_id) = old.and_then(|old| old.channel_id) {
+            if new
+                .user_id
+                .to_user(ctx.http.clone())
+                .map(|user| !user.bot)
+                .unwrap_or(false)
+            {
+                if let Ok(ch) = old_id.to_channel(ctx.http.clone()) {
+                    match ch {
+                        Channel::Guild(channel_lock) => {
+                            let channel = channel_lock.read();
+                            if let Ok(members) = channel.members(ctx.cache) {
+                                if members.len() == 1
+                                    && ctx
+                                        .http
+                                        .get_current_user()
+                                        .map(|u| u.id == members[0].user_id())
+                                        .unwrap_or(false)
+                                {
+                                    let manager_lock =
+                                        ctx.data.read().get::<VoiceManagerKey>().cloned().unwrap();
+                                    let mut manager = manager_lock.lock();
+                                    let has_handler = manager.get(channel.guild_id).is_some();
+                                    if has_handler {
+                                        manager.leave(channel.guild_id);
+                                        manager.remove(channel.guild_id);
+                                    }
+                                }
+                            }
+                        }
+                        _ => (),
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn main() {
@@ -151,7 +206,8 @@ fn main() {
                 println!("[ERROR] {:?} {}", error, msg.content);
             }
         })
-        .bucket("simple", |b| b.delay(1));
+        .bucket("simple", |b| b.delay(1))
+        .bucket("voice", |b| b.delay(1));
 
     client.with_framework(framework);
 
@@ -165,6 +221,11 @@ fn main() {
 
     let reddit_client = Arc::from(RedditClient::new());
     client.data.write().insert::<RedditClientKey>(reddit_client);
+
+    client
+        .data
+        .write()
+        .insert::<VoiceManagerKey>(Arc::clone(&client.voice_manager));
 
     //Start Scheduler
     let http = client.cache_and_http.http.clone();
