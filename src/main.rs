@@ -73,11 +73,21 @@ use std::{
 };
 use tokio::prelude::Future;
 
-group!({
-    name: "general",
-    options: {},
-    commands: [ping, announce, reddit, movie_quote, zalgo, vaporwave, invite, join, leave, play, stop]
-});
+#[group]
+#[commands(
+    ping,
+    announce,
+    reddit,
+    movie_quote,
+    zalgo,
+    vaporwave,
+    invite,
+    join,
+    leave,
+    play,
+    stop
+)]
+struct General;
 
 #[help]
 fn help(
