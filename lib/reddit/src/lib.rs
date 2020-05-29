@@ -83,6 +83,12 @@ impl Client {
     }
 }
 
+impl Default for Client {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 // From https://github.com/reddit-archive/reddit/wiki/json
 #[derive(Debug, Deserialize)]
 pub struct Listing<T> {

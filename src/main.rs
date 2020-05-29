@@ -125,10 +125,6 @@ impl EventHandler for Handler {
 
         println!("[INFO] Choosing Game State {}", random_number);
         println!("[INFO] {} is connected!", ready.user.name);
-
-        //Wait for cache to populate...
-        std::thread::sleep(Duration::from_millis(1000));
-        //Things that need the cache...
     }
 
     fn message(&self, _ctx: Context, _msg: Message) {}
@@ -148,6 +144,8 @@ impl EventHandler for Handler {
                 .unwrap_or(false)
             {
                 if let Ok(ch) = old_id.to_channel(ctx.http.clone()) {
+                    // I don't think i'm doing this right...
+                    #[allow(clippy::single_match)]
                     match ch {
                         Channel::Guild(channel_lock) => {
                             let channel = channel_lock.read();
@@ -170,7 +168,7 @@ impl EventHandler for Handler {
                                 }
                             }
                         }
-                        _ => (),
+                        _ => {}
                     }
                 }
             }
@@ -227,12 +225,12 @@ fn main() {
         .write()
         .insert::<VoiceManagerKey>(Arc::clone(&client.voice_manager));
 
-    //Start Scheduler
+    // Start Scheduler
     let http = client.cache_and_http.http.clone();
     let cache = client.cache_and_http.cache.clone();
 
     println!("[INFO] Starting Event Scheduler...");
-    //TODO: Wrap in arc and rwlock for dynamically adding and removing events?
+    // TODO: Wrap in arc and rwlock for dynamically adding and removing events?
     let mut scheduler = Scheduler::new();
     const AFTER_SCHOOL_ANNOUNCE: &str = "@everyone Robotics Club after school today!";
     const LUNCH_ANNOUNCE: &str = "@everyone Robotics Club during plus and lunch today!";
@@ -241,7 +239,7 @@ fn main() {
         let http = http.clone();
         let cache = cache.clone();
         scheduler.every(Monday).at(NOON).run(move || {
-            //TODO: Ensure client is started and connected before running
+            // TODO: Ensure client is started and connected before running
             let _ = announce_discord(&http, &cache.read(), AFTER_SCHOOL_ANNOUNCE).is_ok();
         });
     }
@@ -260,8 +258,8 @@ fn main() {
         });
     }
     {
-        let http = http.clone();
-        let cache = cache.clone();
+        let http = http;
+        let cache = cache;
         scheduler.every(Friday).at(NOON).run(move || {
             let _ = announce_discord(&http, &cache.read(), AFTER_SCHOOL_ANNOUNCE).is_ok();
         });
