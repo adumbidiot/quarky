@@ -20,6 +20,9 @@ zalgo = { git = "https://github.com/adumbidiot/zalgo-rs", rev = "e630ea0" }
 # Local
 reddit = { path = "./lib/reddit" }
 
+[patch.crates-io]
+serenity = { git = "https://github.com/serenity-rs/serenity", rev = "94d22c3" }
+
 [workspace]
 members = [ "lib/reddit" ]
 

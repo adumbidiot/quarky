@@ -131,7 +131,7 @@ impl RedditClient {
 #[description("Get a random post from a subreddit")]
 #[bucket("simple")]
 #[min_args(1)]
-fn reddit(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
+fn reddit(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let subreddit = args.single::<String>().unwrap();
 
     let blacklist = ["gayporn"];

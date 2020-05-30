@@ -14,7 +14,7 @@ use serenity::{
 
 #[command]
 #[bucket("voice")]
-fn join(ctx: &mut Context, msg: &Message, _args: Args) -> CommandResult {
+fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let guild = match msg.guild(&ctx.cache) {
         Some(guild) => guild,
         None => {

@@ -90,7 +90,7 @@ struct General;
 
 #[help]
 fn help(
-    context: &mut Context,
+    context: &Context,
     msg: &Message,
     args: Args,
     help_options: &'static HelpOptions,

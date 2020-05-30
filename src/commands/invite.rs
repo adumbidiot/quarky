@@ -10,7 +10,7 @@ use serenity::{
 
 #[command]
 #[description("Get an invite link for this bot")]
-pub fn invite(ctx: &mut Context, msg: &Message, _args: Args) -> CommandResult {
+pub fn invite(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let app_info = ctx.http.get_current_application_info()?;
 
     let id = app_info.id;

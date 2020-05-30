@@ -20,7 +20,7 @@ use serenity::{
 #[min_args(1)]
 #[max_args(1)]
 #[example("\"Hello! This is an announcement!\"")]
-pub fn announce(ctx: &mut Context, _msg: &Message, mut args: Args) -> CommandResult {
+pub fn announce(ctx: &Context, _msg: &Message, mut args: Args) -> CommandResult {
     let announcement = args.single_quoted::<String>()?;
     announce_discord(&ctx.http, &ctx.cache.read(), &announcement)?;
     Ok(())

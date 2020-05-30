@@ -60,7 +60,7 @@ lazy_static! {
 
 #[command]
 #[description = "Respond with a random movie quote"]
-pub fn movie_quote(ctx: &mut Context, msg: &Message, _args: Args) -> CommandResult {
+pub fn movie_quote(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let mut rng = rand::thread_rng();
 
     match rng.gen_range(0, 2) {

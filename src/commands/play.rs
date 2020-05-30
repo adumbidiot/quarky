@@ -12,7 +12,7 @@ use serenity::{
 
 #[command]
 #[bucket("voice")]
-fn play(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
+fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let url = match args.single::<String>() {
         Ok(url) => url,
         Err(_) => {

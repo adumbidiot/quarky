@@ -18,7 +18,7 @@ use zalgo::{
 #[example("\"Hello World!\" 50")]
 #[min_args(1)]
 #[max_args(2)]
-pub fn zalgo(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
+pub fn zalgo(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let input: String = args.single_quoted()?;
     let input_max = args.single().unwrap_or(2000);
 
