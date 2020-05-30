@@ -1,85 +1,72 @@
-use hyper::rt::{
-    self,
-    Future,
-};
 use reddit::{
     Client,
-    PostHint,
     RedditError,
     RedditResult,
 };
-use tokio::runtime::Runtime;
 
 // 25 is the default
 
-fn get_subreddit(name: &str) -> RedditResult<()> {
-    let mut rt = Runtime::new().expect("Runtime init");
+async fn get_subreddit(name: &str) -> RedditResult<()> {
     let client = Client::new();
-    let fut = client
-        .get_subreddit(name, 100)
-        .map(|res| println!("{}", res.data.children.len()));
-    drop(client);
-    rt.block_on(fut)
+    let subreddit = client.get_subreddit(name, 100).await?;
+    println!("{}", subreddit.data.children.len());
+    Ok(())
 }
 
-#[test]
-fn subreddit_dankmemes() {
-    get_subreddit("dankmemes").unwrap();
+#[tokio::test]
+async fn subreddit_dankmemes() {
+    get_subreddit("dankmemes").await.unwrap();
 }
 
-#[test]
-fn fake_subreddit() {
+#[tokio::test]
+async fn fake_subreddit() {
     let client = Client::new();
-    let fut = client
-        .get_subreddit("gfdghfj", 25)
-        .map(|_res| panic!("Should fail"))
-        .map_err(|e| assert!(e.is_not_found()));
-    drop(client);
-    rt::run(fut);
+    let err = client.get_subreddit("gfdghfj", 25).await.unwrap_err();
+    assert!(err.is_not_found(), "err = {:#?}", err);
 }
 
-#[test]
-fn subreddit_forbiddensnacks() {
-    get_subreddit("forbiddensnacks").unwrap();
+#[tokio::test]
+async fn subreddit_forbiddensnacks() {
+    get_subreddit("forbiddensnacks").await.unwrap();
 }
 
-#[test]
-fn subreddit_cursedimages() {
-    get_subreddit("cursedimages").expect("Valid");
+#[tokio::test]
+async fn subreddit_cursedimages() {
+    get_subreddit("cursedimages").await.expect("Valid");
 }
 
-#[test]
-fn subreddit_meow_irl() {
-    get_subreddit("MEOW_IRL").expect("Valid");
+#[tokio::test]
+async fn subreddit_meow_irl() {
+    get_subreddit("MEOW_IRL").await.expect("Valid");
 }
 
-#[test]
-fn subreddit_cuddleroll() {
-    match get_subreddit("cuddleroll") {
+#[tokio::test]
+async fn subreddit_cuddleroll() {
+    match get_subreddit("cuddleroll").await {
         Ok(_) => (),
         Err(RedditError::Json(e, _)) => panic!("{:#?}", e),
         Err(e) => panic!("{:#?}", e),
     }
 }
 
-#[test]
-fn subreddit_cromch() {
-    get_subreddit("cromch").expect("Valid");
+#[tokio::test]
+async fn subreddit_cromch() {
+    get_subreddit("cromch").await.expect("Valid");
 }
 
-#[test]
-fn subreddit_cats() {
-    get_subreddit("cats").expect("Valid");
+#[tokio::test]
+async fn subreddit_cats() {
+    get_subreddit("cats").await.expect("Valid");
 }
 
-#[test]
-fn subreddit_cursed_images() {
-    get_subreddit("cursed_images").expect("Valid");
+#[tokio::test]
+async fn subreddit_cursed_images() {
+    get_subreddit("cursed_images").await.expect("Valid");
 }
 
-#[test]
-fn subreddit() {
-    match get_subreddit("aww") {
+#[tokio::test]
+async fn subreddit() {
+    match get_subreddit("aww").await {
         Ok(_) => (),
         Err(RedditError::Json(e, _)) => panic!("{:#?}", e),
         Err(e) => panic!("{:#?}", e),

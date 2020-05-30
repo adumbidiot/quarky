@@ -16,7 +16,6 @@ use commands::{
     *,
 };
 use config::load_config;
-use parking_lot::RwLock;
 use rand::Rng;
 use serenity::{
     client::{
@@ -55,6 +54,7 @@ use serenity::{
     },
     prelude::{
         Mutex,
+        RwLock,
         TypeMapKey,
     },
 };
@@ -71,13 +71,22 @@ use std::{
     thread,
     time::Duration,
 };
-use tokio::prelude::Future;
 
-group!({
-    name: "general",
-    options: {},
-    commands: [ping, announce, reddit, movie_quote, zalgo, vaporwave, invite, join, leave, play, stop]
-});
+#[group]
+#[commands(
+    ping,
+    announce,
+    reddit,
+    movie_quote,
+    zalgo,
+    vaporwave,
+    invite,
+    join,
+    leave,
+    play,
+    stop
+)]
+struct General;
 
 #[help]
 fn help(
@@ -125,10 +134,6 @@ impl EventHandler for Handler {
 
         println!("[INFO] Choosing Game State {}", random_number);
         println!("[INFO] {} is connected!", ready.user.name);
-
-        //Wait for cache to populate...
-        std::thread::sleep(Duration::from_millis(1000));
-        //Things that need the cache...
     }
 
     fn message(&self, _ctx: Context, _msg: Message) {}
@@ -148,6 +153,8 @@ impl EventHandler for Handler {
                 .unwrap_or(false)
             {
                 if let Ok(ch) = old_id.to_channel(ctx.http.clone()) {
+                    // I don't think i'm doing this right...
+                    #[allow(clippy::single_match)]
                     match ch {
                         Channel::Guild(channel_lock) => {
                             let channel = channel_lock.read();
@@ -170,7 +177,7 @@ impl EventHandler for Handler {
                                 }
                             }
                         }
-                        _ => (),
+                        _ => {}
                     }
                 }
             }
@@ -191,7 +198,7 @@ fn main() {
 
     let mut client = Client::new(&config.token, Handler).expect("Error creating client");
 
-    //Init Framework
+    // Init Framework
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("~"))
         .group(&GENERAL_GROUP)
@@ -227,12 +234,12 @@ fn main() {
         .write()
         .insert::<VoiceManagerKey>(Arc::clone(&client.voice_manager));
 
-    //Start Scheduler
+    // Start Scheduler
     let http = client.cache_and_http.http.clone();
     let cache = client.cache_and_http.cache.clone();
 
     println!("[INFO] Starting Event Scheduler...");
-    //TODO: Wrap in arc and rwlock for dynamically adding and removing events?
+    // TODO: Wrap in arc and rwlock for dynamically adding and removing events?
     let mut scheduler = Scheduler::new();
     const AFTER_SCHOOL_ANNOUNCE: &str = "@everyone Robotics Club after school today!";
     const LUNCH_ANNOUNCE: &str = "@everyone Robotics Club during plus and lunch today!";
@@ -241,7 +248,7 @@ fn main() {
         let http = http.clone();
         let cache = cache.clone();
         scheduler.every(Monday).at(NOON).run(move || {
-            //TODO: Ensure client is started and connected before running
+            // TODO: Ensure client is started and connected before running
             let _ = announce_discord(&http, &cache.read(), AFTER_SCHOOL_ANNOUNCE).is_ok();
         });
     }
@@ -260,8 +267,8 @@ fn main() {
         });
     }
     {
-        let http = http.clone();
-        let cache = cache.clone();
+        let http = http;
+        let cache = cache;
         scheduler.every(Friday).at(NOON).run(move || {
             let _ = announce_discord(&http, &cache.read(), AFTER_SCHOOL_ANNOUNCE).is_ok();
         });
@@ -283,14 +290,12 @@ fn main() {
     }
 
     println!("[INFO] Shutting down...");
-    drop(client); //Hopefully gets rid of all other Arcs...
-    Arc::try_unwrap(tokio_runtime) //TODO: Maybe make a wrapper so this isn't so easy to mess up
+    drop(client); // Hopefully gets rid of all other Arcs...
+    let rt = Arc::try_unwrap(tokio_runtime) // TODO: Maybe make a wrapper so this isn't so easy to mess up
         .expect("Should only be one arc left at this point")
-        .into_inner()
-        .shutdown_on_idle()
-        .wait()
-        .expect("Tokio Runtime could not exit safely");
+        .into_inner();
+    drop(rt);
 
     my_stop.store(true, Ordering::SeqCst);
-    handle.join().unwrap(); //TODO: Actually manage the thread better
+    handle.join().unwrap(); // TODO: Actually manage the thread better
 }
