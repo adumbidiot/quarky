@@ -1,7 +1,4 @@
-use crate::{
-    RedditClientKey,
-    TokioRuntimeKey,
-};
+use crate::RedditClientKey;
 use indexmap::IndexMap;
 use rand::Rng;
 use reddit::{
@@ -40,8 +37,8 @@ struct EntryCache {
 }
 
 impl EntryCache {
-    fn populate(&self, iter: impl Iterator<Item = SubRedditEntry>) -> usize {
-        let mut map = self.store.write();
+    async fn populate(&self, iter: impl Iterator<Item = SubRedditEntry>) -> usize {
+        let mut map = self.store.write().await;
         let mut added = 0;
         for post in iter {
             if map
@@ -55,19 +52,19 @@ impl EntryCache {
         added
     }
 
-    fn get_random(&self) -> Option<Arc<SubRedditEntryData>> {
+    async fn get_random(&self) -> Option<Arc<SubRedditEntryData>> {
         self.random_count.fetch_add(1, Ordering::SeqCst);
-        let mut rng = rand::thread_rng();
 
-        let store = self.store.read();
+        let store = self.store.read().await;
+        let mut rng = rand::thread_rng();
         let index = rng.gen_range(0, store.len());
 
         store.get_index(index).map(|(_, v)| v).cloned()
     }
 
-    fn needs_data(&self) -> bool {
-        let num = self.store.read().len();
-        num == 0 || self.random_count.load(Ordering::SeqCst) > (num / 2) //TODO: FineTune / make configurable
+    async fn needs_data(&self) -> bool {
+        let num = self.store.read().await.len();
+        num == 0 || self.random_count.load(Ordering::SeqCst) > (num / 2) // TODO: FineTune / make configurable
     }
 }
 
@@ -88,6 +85,7 @@ impl RedditClient {
         let map_arc = self
             .cache
             .write()
+            .await
             .entry(String::from(subreddit))
             .or_default()
             .clone();
@@ -100,7 +98,7 @@ impl RedditClient {
                 || child.data.url.ends_with(".gif")
         });
 
-        let new_posts = map_arc.populate(posts);
+        let new_posts = map_arc.populate(posts).await;
         println!("[INFO] Reddit Cache populated with {} new posts", new_posts);
 
         Ok(map_arc)
@@ -113,17 +111,18 @@ impl RedditClient {
         let entry_cache = self
             .cache
             .write()
+            .await
             .entry(String::from(subreddit))
             .or_default()
             .clone();
 
-        let entry_cache = if entry_cache.needs_data() {
+        let entry_cache = if entry_cache.needs_data().await {
             self.populate_cache(subreddit).await?
         } else {
             entry_cache
         };
 
-        Ok(entry_cache.get_random())
+        Ok(entry_cache.get_random().await)
     }
 }
 
@@ -131,39 +130,42 @@ impl RedditClient {
 #[description("Get a random post from a subreddit")]
 #[bucket("simple")]
 #[min_args(1)]
-fn reddit(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
+async fn reddit(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let subreddit = args.single::<String>().unwrap();
 
     let blacklist = ["gayporn"];
     if blacklist.contains(&subreddit.as_str()) {
-        let _ = msg.channel_id.say(&ctx.http, "*Angry Barking Noises*")?;
+        msg.channel_id
+            .say(&ctx.http, "*Angry Barking Noises*")
+            .await?;
         return Ok(());
     }
 
-    let data_lock = ctx.data.read();
-    let rt = data_lock.get::<TokioRuntimeKey>().unwrap();
+    let data_lock = ctx.data.read().await;
     let client = data_lock.get::<RedditClientKey>().unwrap();
 
-    match rt.write().block_on(client.get_random_post(&subreddit)) {
+    match client.get_random_post(&subreddit).await {
         Ok(Some(post)) => {
-            let _ = msg.channel_id.say(&ctx.http, &post.url)?;
+            msg.channel_id.say(&ctx.http, &post.url).await?;
         }
         Ok(None) => {
-            let _ = msg
-                .channel_id
-                .say(&ctx.http, "Error: No Image Posts found")?;
+            msg.channel_id
+                .say(&ctx.http, "Error: No Image Posts found")
+                .await?;
         }
         Err(e) => match e {
             RedditError::NotFound => {
-                let _ = msg.channel_id.say(&ctx.http, "Subreddit not found")?;
+                msg.channel_id.say(&ctx.http, "Subreddit not found").await?;
             }
             RedditError::Json(e, _buffer) => {
-                let _ = msg
-                    .channel_id
-                    .say(&ctx.http, &format!("Json Error: {:#?}", e))?;
+                msg.channel_id
+                    .say(&ctx.http, &format!("Json Error: {:#?}", e))
+                    .await?;
             }
             _ => {
-                let _ = msg.channel_id.say(&ctx.http, &format!("Error: {:#?}", e))?;
+                msg.channel_id
+                    .say(&ctx.http, &format!("Error: {:#?}", e))
+                    .await?;
             }
         },
     }

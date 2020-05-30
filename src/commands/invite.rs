@@ -10,8 +10,8 @@ use serenity::{
 
 #[command]
 #[description("Get an invite link for this bot")]
-pub fn invite(ctx: &mut Context, msg: &Message, _args: Args) -> CommandResult {
-    let app_info = ctx.http.get_current_application_info()?;
+pub async fn invite(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+    let app_info = ctx.http.get_current_application_info().await?;
 
     let id = app_info.id;
     let permissions = "1341644225";
@@ -19,6 +19,6 @@ pub fn invite(ctx: &mut Context, msg: &Message, _args: Args) -> CommandResult {
         "https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions={}",
         id, permissions
     );
-    msg.channel_id.say(&ctx.http, &link)?;
+    msg.channel_id.say(&ctx.http, &link).await?;
     Ok(())
 }

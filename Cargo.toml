@@ -20,6 +20,10 @@ zalgo = { git = "https://github.com/adumbidiot/zalgo-rs", rev = "e630ea0" }
 # Local
 reddit = { path = "./lib/reddit" }
 
+[patch.crates-io]
+# Tracking PR for adding async to serenity
+serenity = { git = "https://github.com/Lakelezz/serenity", rev = "a2e8cde" }
+
 [workspace]
 members = [ "lib/reddit" ]
 

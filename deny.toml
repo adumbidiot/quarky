@@ -50,23 +50,24 @@ highlight = "all"
 skip = [
 	# blocked on tokio bumping mio to 0.7
 	{ name = "winapi", version = "0.2.8" },
-	# blocked on serenity bumping webpki-roots to 0.19.0
-	{ name = "webpki-roots", version = "0.18.0" },
-	# blocked on parking_lot releasing 0.10.0 and serenity updating parking_lot to 0.10.0
-	{ name = "smallvec", version = "0.6.13" },
 	# blocked on serenity bumping rustls to 0.17.0
 	{ name = "rustls", version = "0.16.0" },
-	{ name = "base64", version = "0.10.1" },
-	# blocked on serenity bumping tungstenite to 0.10.1
-	{ name = "http", version = "0.1.21" },
-	{ name = "bytes", version = "0.4.12" },
-	# blocked on rustls bumping base64 to 0.12.1 and serenity bumping base64 to 0.12.1 and serenity bumping tungstenite to 0.10.1
-	{ name = "base64", version = "0.11.0" },
+    { name = "base64", version = "0.10.1" },
+	
+    # blocked on rustls bumping base64 to 0.12.1 and serenity bumping base64 to 0.12.1 and serenity bumping tungstenite to 0.10.1
+    { name = "base64", version = "0.11.0" },
+	
+    # blocked on serenity bumping async-tungstenite to 0.5.0
+    { name = "webpki-roots", version = "0.19.0" },
+	
+    # blocked on mio-named-pipes depending on a single version of miow/mio
+    { name = "miow", version = "0.3.4" },
 ]
 
 [sources]
 unknown-registry = "warn"
-unknown-git = "warn"
+unknown-git = "deny"
 allow-git = [
 	"https://github.com/adumbidiot/zalgo-rs",
+	"https://github.com/Lakelezz/serenity",
 ]
