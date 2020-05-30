@@ -1,4 +1,7 @@
 # quarky
+![CI](https://github.com/adumbidiot/quarky/workflows/CI/badge.svg)
+
+## Description
 Heyo, it's your boi Nate D the hip hop star. you may know me by my alias: adumbidiot. I present to you a life changing discord bot known as "Quarky". 
 Written in Rust, nobody really understands if it is some or none or maybe even a sandwich.
 Quarky is a revolutionary new take on the classic web scraping, robotics reminding, announcing, ping pong bot. With built in 'listening to hooman noises' activity, everyone will know that quarky is indeed a doggo.
