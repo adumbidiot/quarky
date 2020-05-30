@@ -1,9 +1,5 @@
 use hyper::{
     client::HttpConnector,
-    rt::{
-        Future,
-        Stream,
-    },
     Client as HyperClient,
     StatusCode,
 };
@@ -37,49 +33,49 @@ pub struct Client {
 
 impl Client {
     pub fn new() -> Self {
-        let dns_threads = 4;
-        let https = HttpsConnector::new(dns_threads).unwrap();
+        let https = HttpsConnector::new();
         let handle = HyperClient::builder().build::<_, hyper::Body>(https);
         Client { handle }
     }
 
-    pub fn get_subreddit(
+    pub async fn get_subreddit(
         &self,
         subreddit: &str,
         n: usize,
-    ) -> impl Future<Item = SubRedditListing, Error = RedditError> {
+    ) -> Result<SubRedditListing, RedditError> {
         let uri = format!("https://www.reddit.com/r/{}.json?limit={}", subreddit, n)
             .parse()
             .unwrap();
 
-        self.handle
+        let res = self
+            .handle
             .get(uri)
-            .map_err(|_| RedditError::Network)
-            .and_then(|res| {
-                let status = res.status();
-                if !status.is_success() {
-                    return match status {
-                        StatusCode::FOUND => match res.headers().get(hyper::header::LOCATION) {
-                            Some(link) => {
-                                let url = b"https://www.reddit.com/subreddits/search.json?";
-                                if link.as_ref().starts_with(url) {
-                                    Err(RedditError::NotFound)
-                                } else {
-                                    Err(RedditError::InvalidStatusCode(status.as_u16()))
-                                }
-                            }
-                            None => Err(RedditError::InvalidStatusCode(status.as_u16())),
-                        },
-                        _ => Err(RedditError::InvalidStatusCode(status.as_u16())),
-                    };
-                }
-                Ok(res)
-            })
-            .and_then(|res| res.into_body().concat2().map_err(|_| RedditError::Network))
-            .and_then(|body| {
-                serde_json::from_slice(&body)
-                    .map_err(|e| RedditError::Json(e, Some(body.into_bytes())))
-            })
+            .await
+            .map_err(|_| RedditError::Network)?;
+
+        let status = res.status();
+        if !status.is_success() {
+            return match status {
+                StatusCode::FOUND => match res.headers().get(hyper::header::LOCATION) {
+                    Some(link) => {
+                        let url = b"https://www.reddit.com/subreddits/search.json?";
+                        if link.as_ref().starts_with(url) {
+                            Err(RedditError::NotFound)
+                        } else {
+                            Err(RedditError::InvalidStatusCode(status.as_u16()))
+                        }
+                    }
+                    None => Err(RedditError::InvalidStatusCode(status.as_u16())),
+                },
+                _ => Err(RedditError::InvalidStatusCode(status.as_u16())),
+            };
+        }
+
+        let body = hyper::body::to_bytes(res)
+            .await
+            .map_err(|_| RedditError::Network)?;
+
+        serde_json::from_slice(&body).map_err(|e| RedditError::Json(e, Some(body)))
     }
 }
 

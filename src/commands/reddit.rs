@@ -30,11 +30,6 @@ use std::{
         Arc,
     },
 };
-use tokio::prelude::{
-    future::Either,
-    Future,
-    IntoFuture,
-};
 
 type SubRedditCache = Arc<RwLock<HashMap<String, EntryCache>>>;
 
@@ -89,10 +84,7 @@ impl RedditClient {
         }
     }
 
-    fn populate_cache(
-        &self,
-        subreddit: &str,
-    ) -> impl Future<Item = EntryCache, Error = RedditError> {
+    async fn populate_cache(&self, subreddit: &str) -> Result<EntryCache, RedditError> {
         let map_arc = self
             .cache
             .write()
@@ -100,25 +92,24 @@ impl RedditClient {
             .or_default()
             .clone();
 
-        self.client.get_subreddit(&subreddit, 100).map(move |list| {
-            let posts = list.data.children.into_iter().filter(|child| {
-                child.data.post_hint == Some(PostHint::Image)
-                    || child.data.url.ends_with(".jpg")
-                    || child.data.url.ends_with(".png")
-                    || child.data.url.ends_with(".gif")
-            });
+        let list = self.client.get_subreddit(&subreddit, 100).await?;
+        let posts = list.data.children.into_iter().filter(|child| {
+            child.data.post_hint == Some(PostHint::Image)
+                || child.data.url.ends_with(".jpg")
+                || child.data.url.ends_with(".png")
+                || child.data.url.ends_with(".gif")
+        });
 
-            let new_posts = map_arc.populate(posts);
-            println!("[INFO] Reddit Cache populated with {} new posts", new_posts);
+        let new_posts = map_arc.populate(posts);
+        println!("[INFO] Reddit Cache populated with {} new posts", new_posts);
 
-            map_arc
-        })
+        Ok(map_arc)
     }
 
-    pub fn get_random_post(
+    pub async fn get_random_post(
         &self,
         subreddit: &str,
-    ) -> impl Future<Item = Option<Arc<SubRedditEntryData>>, Error = RedditError> {
+    ) -> Result<Option<Arc<SubRedditEntryData>>, RedditError> {
         let entry_cache = self
             .cache
             .write()
@@ -126,13 +117,13 @@ impl RedditClient {
             .or_default()
             .clone();
 
-        let fut = if entry_cache.needs_data() {
-            Either::A(self.populate_cache(subreddit))
+        let entry_cache = if entry_cache.needs_data() {
+            self.populate_cache(subreddit).await?
         } else {
-            Either::B(Ok(entry_cache).into_future())
+            entry_cache
         };
 
-        fut.map(|entry_cache| entry_cache.get_random())
+        Ok(entry_cache.get_random())
     }
 }
 

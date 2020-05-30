@@ -71,7 +71,6 @@ use std::{
     thread,
     time::Duration,
 };
-use tokio::prelude::Future;
 
 #[group]
 #[commands(
@@ -199,7 +198,7 @@ fn main() {
 
     let mut client = Client::new(&config.token, Handler).expect("Error creating client");
 
-    //Init Framework
+    // Init Framework
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("~"))
         .group(&GENERAL_GROUP)
@@ -291,14 +290,12 @@ fn main() {
     }
 
     println!("[INFO] Shutting down...");
-    drop(client); //Hopefully gets rid of all other Arcs...
-    Arc::try_unwrap(tokio_runtime) //TODO: Maybe make a wrapper so this isn't so easy to mess up
+    drop(client); // Hopefully gets rid of all other Arcs...
+    let rt = Arc::try_unwrap(tokio_runtime) // TODO: Maybe make a wrapper so this isn't so easy to mess up
         .expect("Should only be one arc left at this point")
-        .into_inner()
-        .shutdown_on_idle()
-        .wait()
-        .expect("Tokio Runtime could not exit safely");
+        .into_inner();
+    drop(rt);
 
     my_stop.store(true, Ordering::SeqCst);
-    handle.join().unwrap(); //TODO: Actually manage the thread better
+    handle.join().unwrap(); // TODO: Actually manage the thread better
 }
