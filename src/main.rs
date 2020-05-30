@@ -16,7 +16,6 @@ use commands::{
     *,
 };
 use config::load_config;
-use parking_lot::RwLock;
 use rand::Rng;
 use serenity::{
     client::{
@@ -55,6 +54,7 @@ use serenity::{
     },
     prelude::{
         Mutex,
+        RwLock,
         TypeMapKey,
     },
 };

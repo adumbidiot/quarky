@@ -3,7 +3,6 @@ use crate::{
     TokioRuntimeKey,
 };
 use indexmap::IndexMap;
-use parking_lot::RwLock;
 use rand::Rng;
 use reddit::{
     PostHint,
@@ -19,6 +18,7 @@ use serenity::{
         CommandResult,
     },
     model::channel::Message,
+    prelude::RwLock,
 };
 use std::{
     collections::HashMap,
