@@ -6,7 +6,7 @@ edition = "2018"
 publish = false
 
 [dependencies]
-serenity = { version = "0.7.3", features = [ "voice" ] }
+serenity = { version = "0.8.6", features = [ "voice" ] }
 rand = "0.7.2"
 serde_json = "1.0.41"
 clokwerk = "0.2.2"
