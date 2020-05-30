@@ -14,20 +14,18 @@ use serenity::{
 
 #[command]
 #[bucket("voice")]
-fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    let guild = match msg.guild(&ctx.cache) {
+async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+    let guild = match msg.guild(&ctx.cache).await {
         Some(guild) => guild,
         None => {
             msg.channel_id
-                .say(&ctx.http, "Groups and DMs not supported")?;
+                .say(&ctx.http, "Groups and DMs not supported")
+                .await?;
             return Ok(());
         }
     };
 
-    let guild_id = guild.read().id;
-
     let channel_id = guild
-        .read()
         .voice_states
         .get(&msg.author.id)
         .and_then(|voice_state| voice_state.channel_id);
@@ -35,19 +33,28 @@ fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let connect_to = match channel_id {
         Some(channel) => channel,
         None => {
-            msg.reply(&ctx, "Not in a voice channel")?;
+            msg.reply(&ctx.http, "Not in a voice channel").await?;
             return Ok(());
         }
     };
 
-    let manager_lock = ctx.data.read().get::<VoiceManagerKey>().cloned().unwrap();
+    let manager_lock = ctx
+        .data
+        .read()
+        .await
+        .get::<VoiceManagerKey>()
+        .cloned()
+        .unwrap();
 
-    let mut manager = manager_lock.lock();
-    if manager.join(guild_id, connect_to).is_some() {
+    let mut manager = manager_lock.lock().await;
+    if manager.join(guild.id, connect_to).is_some() {
         msg.channel_id
-            .say(&ctx.http, &format!("Joined {}", connect_to.mention()))?;
+            .say(&ctx.http, &format!("Joined {}", connect_to.mention()))
+            .await?;
     } else {
-        msg.channel_id.say(&ctx.http, "Error joining the channel")?;
+        msg.channel_id
+            .say(&ctx.http, "Error joining the channel")
+            .await?;
     }
 
     Ok(())

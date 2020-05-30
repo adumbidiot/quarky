@@ -60,35 +60,50 @@ lazy_static! {
 
 #[command]
 #[description = "Respond with a random movie quote"]
-pub fn movie_quote(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    let mut rng = rand::thread_rng();
+pub async fn movie_quote(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+    let corpus_choice;
+    let memorable_quote;
+    let quote_pair;
+    let use_memorable;
+    {
+        let mut rng = rand::thread_rng();
 
-    match rng.gen_range(0, 2) {
+        corpus_choice = rng.gen_range(0u8, 2);
+
+        memorable_quote = MEMORABLE_QUOTES.choose(&mut rng);
+        quote_pair = QUOTE_PAIRS.choose(&mut rng);
+
+        use_memorable = rng.gen();
+    }
+
+    match corpus_choice {
         0 => {
-            let quote = match MEMORABLE_QUOTES.choose(&mut rng) {
+            let quote = match memorable_quote {
                 Some(el) => el,
                 None => {
                     msg.channel_id
-                        .say(&ctx.http, "Error: Failed to load Memorable Quote Corpus")?;
+                        .say(&ctx.http, "Error: Failed to load Memorable Quote Corpus")
+                        .await?;
                     return Ok(());
                 }
             };
             let res = format!("{}\n\t-{}", quote.quote, quote.movie);
-            msg.channel_id.say(&ctx.http, &res)?;
+            msg.channel_id.say(&ctx.http, &res).await?;
         }
-        1 => match QUOTE_PAIRS.choose(&mut rng) {
+        1 => match quote_pair {
             Some(quote) => {
-                let quote_data = if rng.gen() {
+                let quote_data = if use_memorable {
                     quote.memorable_quote.quote
                 } else {
                     quote.nonmemorable_quote.quote
                 };
                 let res = format!("{}\n\t-{}", quote_data, quote.movie);
-                msg.channel_id.say(&ctx.http, &res)?;
+                msg.channel_id.say(&ctx.http, &res).await?;
             }
             None => {
                 msg.channel_id
-                    .say(&ctx.http, "Error: Failed to load Quote Pair Corpus")?;
+                    .say(&ctx.http, "Error: Failed to load Quote Pair Corpus")
+                    .await?;
                 return Ok(());
             }
         },

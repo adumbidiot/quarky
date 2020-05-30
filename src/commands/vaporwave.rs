@@ -14,9 +14,12 @@ use serenity::{
 #[example("\"Hello World!\"")]
 #[min_args(1)]
 #[max_args(1)]
-pub fn vaporwave(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+pub async fn vaporwave(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let phrase = args.single_quoted::<String>()?;
-    let _ = msg.channel_id.say(&ctx.http, vaporwave_str(&phrase))?;
+    let _ = msg
+        .channel_id
+        .say(&ctx.http, vaporwave_str(&phrase))
+        .await?;
     Ok(())
 }
 

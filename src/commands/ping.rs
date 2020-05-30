@@ -10,7 +10,7 @@ use serenity::{
 
 #[command]
 #[description = "Respond with pong"]
-pub fn ping(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    msg.channel_id.say(&ctx.http, "pong")?;
+pub async fn ping(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+    msg.channel_id.say(&ctx.http, "pong").await?;
     Ok(())
 }
