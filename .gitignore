@@ -2,4 +2,3 @@
 **/*.rs.bk
 token.txt
 Config.toml
-Cargo.lock

@@ -1,0 +1,72 @@
+targets = [
+	{ triple = "x86_64-unknown-linux-gnu" },
+	{ triple = "x86_64-unknown-linux-musl" },
+	{ triple = "x86_64-apple-darwin" },
+	{ triple = "x86_64-pc-windows-msvc" },
+]
+
+[advisories]
+vulnerability = "deny"
+unmaintained = "deny"
+notice = "deny"
+ignore = [
+	# spin is unmaintained, but it has a couple of heavy users,
+	# particularly lazy_static that will probably take a while
+	# to get rid of
+	"RUSTSEC-2019-0031",
+	# blocked on tokio bumping mio to 0.7
+	"RUSTSEC-2020-0016",
+]
+
+[licenses]
+unlicensed = "deny"
+copyleft = "warn"
+confidence-threshold = 0.93
+default = "deny"
+private = { ignore = true }
+allow = [ "Apache-2.0", "MIT", "ISC", "Zlib" ]
+exceptions = [
+    { name = "ring", allow = [ "MIT", "ISC", "OpenSSL" ] },
+    { name = "webpki-roots", allow = [ "MPL-2.0" ] },
+]
+
+[[licenses.clarify]]
+name = "ring"
+expression = "MIT AND ISC AND OpenSSL"
+license-files = [
+    { path = "LICENSE", hash = 0xbd0eed23 },
+]
+
+[[licenses.clarify]]
+name = "webpki"
+expression = "ISC"
+license-files = [
+    { path = "LICENSE", hash = 0x001c7e6c },
+]
+
+[bans]
+multiple-versions = "deny"
+highlight = "all"
+skip = [
+	# blocked on tokio bumping mio to 0.7
+	{ name = "winapi", version = "0.2.8" },
+	# blocked on serenity bumping webpki-roots to 0.19.0
+	{ name = "webpki-roots", version = "0.18.0" },
+	# blocked on parking_lot releasing 0.10.0 and serenity updating parking_lot to 0.10.0
+	{ name = "smallvec", version = "0.6.13" },
+	# blocked on serenity bumping rustls to 0.17.0
+	{ name = "rustls", version = "0.16.0" },
+	{ name = "base64", version = "0.10.1" },
+	# blocked on serenity bumping tungstenite to 0.10.1
+	{ name = "http", version = "0.1.21" },
+	{ name = "bytes", version = "0.4.12" },
+	# blocked on rustls bumping base64 to 0.12.1 and serenity bumping base64 to 0.12.1 and serenity bumping tungstenite to 0.10.1
+	{ name = "base64", version = "0.11.0" },
+]
+
+[sources]
+unknown-registry = "warn"
+unknown-git = "warn"
+allow-git = [
+	"https://github.com/adumbidiot/zalgo-rs",
+]
