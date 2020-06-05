@@ -19,7 +19,7 @@ pub enum RedditError {
     Hyper(hyper::Error),
     InvalidUri(http::uri::InvalidUri),
 
-    InvalidStatusCode(u16),
+    InvalidStatusCode(http::StatusCode),
     NotFound,
 
     Json(serde_json::Error, Option<bytes::Bytes>),
@@ -76,12 +76,12 @@ impl Client {
                         if link.as_ref().starts_with(url) {
                             Err(RedditError::NotFound)
                         } else {
-                            Err(RedditError::InvalidStatusCode(status.as_u16()))
+                            Err(RedditError::InvalidStatusCode(status))
                         }
                     }
-                    None => Err(RedditError::InvalidStatusCode(status.as_u16())),
+                    None => Err(RedditError::InvalidStatusCode(status)),
                 },
-                _ => Err(RedditError::InvalidStatusCode(status.as_u16())),
+                _ => Err(RedditError::InvalidStatusCode(status)),
             };
         }
 
