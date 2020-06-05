@@ -10,7 +10,7 @@ clokwerk = "0.3.0"
 indexmap = "1.4.0"
 lazy_static = "1.4.0"
 rand = "0.7.3"
-serde = { version = "1.0.110", features = [ "derive" ] }
+serde = { version = "1.0.111", features = [ "derive" ] }
 serde_json = "1.0.53"
 serenity = { version = "0.8.6", features = [ "voice" ] }
 tokio = { version = "0.2.21", features = [ "rt-threaded" ] }
@@ -19,6 +19,7 @@ zalgo = { git = "https://github.com/adumbidiot/zalgo-rs", rev = "e630ea0" }
 
 # Local
 reddit = { path = "./lib/reddit" }
+http = "0.2.1"
 
 [patch.crates-io]
 # Tracking PR for adding async to serenity
