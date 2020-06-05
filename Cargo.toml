@@ -19,6 +19,7 @@ zalgo = { git = "https://github.com/adumbidiot/zalgo-rs", rev = "e630ea0" }
 
 # Local
 reddit = { path = "./lib/reddit" }
+http = "0.2.1"
 
 [patch.crates-io]
 # Tracking PR for adding async to serenity
