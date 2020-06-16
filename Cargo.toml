@@ -7,9 +7,11 @@ publish = false
 
 [dependencies]
 clokwerk = "0.3.0"
+http = "0.2.1"
 indexmap = "1.4.0"
 lazy_static = "1.4.0"
 rand = "0.7.3"
+reddit = { git = "https://github.com/adumbidiot/reddit-rs", rev = "2451ce9" }
 serde = { version = "1.0.112", features = [ "derive" ] }
 serde_json = "1.0.55"
 serenity = { version = "0.8.6", features = [ "voice" ] }
@@ -17,16 +19,9 @@ tokio = { version = "0.2.21", features = [ "rt-threaded" ] }
 toml = "0.5.6"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs", rev = "e630ea0" }
 
-# Local
-reddit = { path = "./lib/reddit" }
-http = "0.2.1"
-
 [patch.crates-io]
 # Tracking PR for adding async to serenity
 serenity = { git = "https://github.com/Lakelezz/serenity", rev = "a2e8cde" }
-
-[workspace]
-members = [ "lib/reddit" ]
 
 #[profile.release]
 #lto = true

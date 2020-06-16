@@ -70,4 +70,5 @@ unknown-git = "deny"
 allow-git = [
 	"https://github.com/adumbidiot/zalgo-rs",
 	"https://github.com/Lakelezz/serenity",
+	"https://github.com/adumbidiot/reddit-rs",
 ]
