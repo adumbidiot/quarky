@@ -1,8 +1,6 @@
 # quarky
 ![CI](https://github.com/adumbidiot/quarky/workflows/CI/badge.svg)
 
-![Frank](/assets/frank.jpg)
-
 ## Description
 Heyo, it's your boi Nate D the hip hop star. you may know me by my alias: adumbidiot. I present to you a life changing discord bot known as "Quarky". 
 Written in Rust, nobody really understands if it is some or none or maybe even a sandwich.
