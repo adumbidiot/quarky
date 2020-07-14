@@ -6,7 +6,7 @@ edition = "2018"
 publish = false
 
 [dependencies]
-clokwerk = "0.3.0"
+clokwerk = "0.3.2"
 http = "0.2.1"
 indexmap = "1.4.0"
 lazy_static = "1.4.0"
