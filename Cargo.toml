@@ -8,7 +8,7 @@ publish = false
 [dependencies]
 clokwerk = "0.3.3"
 http = "0.2.1"
-indexmap = "1.5.1"
+indexmap = "1.5.2"
 lazy_static = "1.4.0"
 rand = "0.7.3"
 reddit = { git = "https://github.com/adumbidiot/reddit-rs", rev = "2451ce9" }
