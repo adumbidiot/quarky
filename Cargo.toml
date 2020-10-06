@@ -13,7 +13,7 @@ lazy_static = "1.4.0"
 rand = "0.7.3"
 reddit = { git = "https://github.com/adumbidiot/reddit-rs", rev = "2451ce9" }
 serde = { version = "1.0.115", features = [ "derive" ] }
-serde_json = "1.0.57"
+serde_json = "1.0.58"
 serenity = { version = "0.8.6", features = [ "voice" ] }
 tokio = { version = "0.2.22", features = [ "rt-threaded" ] }
 toml = "0.5.6"
