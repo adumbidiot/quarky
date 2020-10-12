@@ -16,7 +16,7 @@ serde = { version = "1.0.116", features = [ "derive" ] }
 serde_json = "1.0.58"
 serenity = { version = "0.8.6", features = [ "voice" ] }
 tokio = { version = "0.2.22", features = [ "rt-threaded" ] }
-toml = "0.5.6"
+toml = "0.5.7"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs", rev = "e630ea0" }
 
 [patch.crates-io]
