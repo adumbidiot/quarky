@@ -96,7 +96,8 @@ async fn help(
     groups: &[&'static CommandGroup],
     owners: HashSet<UserId>,
 ) -> CommandResult {
-    help_commands::with_embeds(context, msg, args, &help_options, groups, owners).await
+    help_commands::with_embeds(context, msg, args, &help_options, groups, owners).await;
+    Ok(())
 }
 
 struct RedditClientKey;
@@ -191,7 +192,7 @@ fn main() {
     let config = match load_config(Path::new(config_path)) {
         Ok(config) => config,
         Err(e) => {
-            eprintln!("[ERROR] Error loading '{}': {:?}", config_path, e);
+            eprintln!("[ERROR] Error loading '{}': {:#?}", config_path, e);
             return;
         }
     };
@@ -199,7 +200,7 @@ fn main() {
     let mut tokio_runtime = match TokioRuntime::new() {
         Ok(rt) => rt,
         Err(e) => {
-            eprintln!("[ERROR] Error starting tokio runtime: {:?}", e);
+            eprintln!("[ERROR] Error starting tokio runtime: {}", e);
             return;
         }
     };
@@ -217,7 +218,7 @@ fn main() {
                             .channel_id
                             .say(
                                 &ctx.http,
-                                &format!("Try this again in {} second(s).", seconds),
+                                &format!("Try this again in {} second(s).", seconds.as_secs_f32()),
                             )
                             .await;
                     })
@@ -238,7 +239,7 @@ fn main() {
         {
             Ok(c) => c,
             Err(e) => {
-                eprintln!("Failed to start client: {:#?}", e);
+                eprintln!("Failed to start client: {}", e);
                 return;
             }
         };
@@ -329,7 +330,7 @@ fn main() {
 
         println!("[INFO] Logging in...");
         if let Err(why) = client.start().await {
-            println!("[ERROR] {:?}", why);
+            println!("[ERROR] {}", why);
         }
 
         println!("[INFO] Shutting down...");
