@@ -54,7 +54,7 @@ pub async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
         let source = match voice::ytdl(&url).await {
             Ok(source) => source,
             Err(why) => {
-                println!("[ERROR] Could not play audio: {:?}", why);
+                println!("[ERROR] Could not play audio: {}", why);
                 msg.channel_id
                     .say(&ctx.http, "Error sourcing ffmpeg")
                     .await?;
