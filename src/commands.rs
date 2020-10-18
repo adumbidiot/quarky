@@ -5,6 +5,7 @@ pub mod leave;
 pub mod movie_quote;
 pub mod ping;
 pub mod play;
+pub mod random_tweet;
 pub mod reddit;
 pub mod stop;
 pub mod vaporwave;
@@ -18,6 +19,7 @@ pub use crate::commands::{
     movie_quote::MOVIE_QUOTE_COMMAND,
     ping::PING_COMMAND,
     play::PLAY_COMMAND,
+    random_tweet::RANDOM_TWEET_COMMAND,
     reddit::REDDIT_COMMAND,
     stop::STOP_COMMAND,
     vaporwave::VAPORWAVE_COMMAND,
