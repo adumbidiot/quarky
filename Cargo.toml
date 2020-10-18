@@ -20,9 +20,9 @@ tokio = { version = "0.2.22", features = [ "rt-threaded" ] }
 toml = "0.5.7"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs", rev = "e630ea0" }
 
-#[profile.release]
-#lto = true
-#codegen-units = 1
-#debug = false
-#opt-level = 3
-#debug-assertions = false
+# [profile.release]
+# lto = true
+# codegen-units = 1
+# debug = false
+# opt-level = 3
+# debug-assertions = false

@@ -333,6 +333,21 @@ fn main() {
             }
         });
 
+        {
+            let shard_manager = client.shard_manager.clone();
+            tokio::spawn(async move {
+                match tokio::signal::ctrl_c().await {
+                    Ok(()) => {
+                        println!("[INFO] Beginning shutdown...");
+                        shard_manager.lock().await.shutdown_all().await;
+                    }
+                    Err(e) => {
+                        eprintln!("[WARN] Failed to register ctrl-c handler: {}", e);
+                    }
+                }
+            });
+        }
+
         println!("[INFO] Logging in...");
         if let Err(why) = client.start().await {
             println!("[ERROR] {}", why);
