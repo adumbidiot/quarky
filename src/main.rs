@@ -57,16 +57,13 @@ use serenity::{
 use std::{
     collections::HashSet,
     path::Path,
-    sync::{
-        atomic::{
-            AtomicBool,
-            Ordering,
-        },
-        Arc,
-    },
+    sync::Arc,
     time::Duration,
 };
-use tokio::runtime::Runtime as TokioRuntime;
+use tokio::{
+    runtime::Runtime as TokioRuntime,
+    sync::Notify,
+};
 
 #[group]
 #[commands(
@@ -315,6 +312,7 @@ fn main() {
         const AFTER_SCHOOL_ANNOUNCE: &str = "@everyone Robotics Club after school today!";
         const LUNCH_ANNOUNCE: &str = "@everyone Robotics Club during plus and lunch today!";
         const NOON: &str = "12:00:00";
+        let scheduler_shutdown_notify = Arc::new(Notify::new());
 
         schedule_robotics_reminder(&client, &mut scheduler, Monday, NOON, AFTER_SCHOOL_ANNOUNCE)
             .await;
@@ -324,12 +322,18 @@ fn main() {
             .await;
 
         let frequency = Duration::from_secs(60 * 5);
-        let stop = Arc::new(AtomicBool::new(false));
-        let my_stop = stop.clone();
+        let notify = scheduler_shutdown_notify.clone();
         let handle = tokio::task::spawn(async move {
-            while !stop.load(Ordering::SeqCst) {
+            let mut should_exit = false;
+
+            while !should_exit {
+                should_exit = tokio::select! {
+                    _ = tokio::time::delay_for(frequency) => false,
+                    _ = notify.notified() => true,
+
+                };
+
                 scheduler.run_pending();
-                tokio::time::delay_for(frequency).await;
             }
         });
 
@@ -354,10 +358,12 @@ fn main() {
         }
 
         println!("[INFO] Shutting down...");
-        my_stop.store(true, Ordering::SeqCst);
+        scheduler_shutdown_notify.notify();
         drop(client); // Hopefully gets rid of all other Arcs...
 
-        handle.await.unwrap(); // TODO: Actually manage the task better
+        if let Err(e) = handle.await {
+            eprintln!("[ERROR] Scheduler Crashed: {}", e);
+        }
     });
 
     drop(tokio_runtime);
