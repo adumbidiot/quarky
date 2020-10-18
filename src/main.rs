@@ -190,6 +190,42 @@ impl EventHandler for Handler {
     }
 }
 
+async fn schedule_robotics_reminder(
+    client: &Client,
+    scheduler: &mut Scheduler,
+    day: clokwerk::Interval,
+    time: &str,
+    msg: &str,
+) {
+    let data_lock = client.data.read().await;
+    let token = data_lock.get::<TwitterTokenKey>().unwrap().clone();
+    drop(data_lock);
+
+    let msg = msg.to_string();
+    let http = client.cache_and_http.http.clone();
+    let cache = client.cache_and_http.cache.clone();
+
+    scheduler.every(day).at(time).run(move || {
+        let token = token.clone();
+        let msg = msg.clone();
+        let http = http.clone();
+        let cache = cache.clone();
+        tokio::spawn(async move {
+            let msg = match crate::random_tweet::get_random_tweet_url(&token, "dog_rates")
+                .await
+                .ok()
+                .flatten()
+            {
+                Some(link) => format!("{}\n{}", msg, link),
+                None => msg,
+            };
+            
+            // TODO: Ensure client is started and connected before running
+            let _ = announce_discord(&http, &cache, &msg).await.is_ok();
+        });
+    });
+}
+
 fn main() {
     println!("[INFO] Loading Config.toml...");
     let config_path = "./Config.toml";
@@ -236,7 +272,7 @@ fn main() {
                             .channel_id
                             .say(
                                 &ctx.http,
-                                &format!("Try this again in {} second(s).", seconds.as_secs_f32()),
+                                format!("Try this again in {} second(s).", seconds.as_secs_f32()),
                             )
                             .await;
                     })
@@ -273,69 +309,19 @@ fn main() {
         }
 
         // Start Scheduler
-        let http = client.cache_and_http.http.clone();
-        let cache = client.cache_and_http.cache.clone();
-
         println!("[INFO] Starting Event Scheduler...");
         // TODO: Wrap in arc and rwlock for dynamically adding and removing events?
         let mut scheduler = Scheduler::new();
         const AFTER_SCHOOL_ANNOUNCE: &str = "@everyone Robotics Club after school today!";
         const LUNCH_ANNOUNCE: &str = "@everyone Robotics Club during plus and lunch today!";
         const NOON: &str = "12:00:00";
-        {
-            let http = http.clone();
-            let cache = cache.clone();
 
-            scheduler.every(Monday).at(NOON).run(move || {
-                let http = http.clone();
-                let cache = cache.clone();
-                tokio::spawn(async move {
-                    // TODO: Ensure client is started and connected before running
-                    let _ = announce_discord(&http, &cache, AFTER_SCHOOL_ANNOUNCE)
-                        .await
-                        .is_ok();
-                });
-            });
-        }
-        {
-            let http = http.clone();
-            let cache = cache.clone();
-            scheduler.every(Tuesday).at(NOON).run(move || {
-                let http = http.clone();
-                let cache = cache.clone();
-                tokio::spawn(async move {
-                    let _ = announce_discord(&http, &cache, LUNCH_ANNOUNCE)
-                        .await
-                        .is_ok();
-                });
-            });
-        }
-        {
-            let http = http.clone();
-            let cache = cache.clone();
-            scheduler.every(Thursday).at(NOON).run(move || {
-                let http = http.clone();
-                let cache = cache.clone();
-                tokio::spawn(async move {
-                    let _ = announce_discord(&http, &cache, LUNCH_ANNOUNCE)
-                        .await
-                        .is_ok();
-                });
-            });
-        }
-        {
-            let http = http;
-            let cache = cache;
-            scheduler.every(Friday).at(NOON).run(move || {
-                let http = http.clone();
-                let cache = cache.clone();
-                tokio::spawn(async move {
-                    let _ = announce_discord(&http, &cache, AFTER_SCHOOL_ANNOUNCE)
-                        .await
-                        .is_ok();
-                });
-            });
-        }
+        schedule_robotics_reminder(&client, &mut scheduler, Monday, NOON, AFTER_SCHOOL_ANNOUNCE)
+            .await;
+        schedule_robotics_reminder(&client, &mut scheduler, Tuesday, NOON, LUNCH_ANNOUNCE).await;
+        schedule_robotics_reminder(&client, &mut scheduler, Thursday, NOON, LUNCH_ANNOUNCE).await;
+        schedule_robotics_reminder(&client, &mut scheduler, Friday, NOON, AFTER_SCHOOL_ANNOUNCE)
+            .await;
 
         let frequency = Duration::from_secs(60 * 5);
         let stop = Arc::new(AtomicBool::new(false));
