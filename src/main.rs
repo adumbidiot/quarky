@@ -219,7 +219,7 @@ async fn schedule_robotics_reminder(
                 Some(link) => format!("{}\n{}", msg, link),
                 None => msg,
             };
-            
+
             // TODO: Ensure client is started and connected before running
             let _ = announce_discord(&http, &cache, &msg).await.is_ok();
         });
