@@ -10,6 +10,19 @@ use serenity::{
     model::channel::Message,
 };
 
+pub async fn get_random_tweet_url(
+    twitter_token: &egg_mode::auth::Token,
+    user: &str,
+) -> Result<Option<String>, egg_mode::error::Error> {
+    let timeline = egg_mode::tweet::user_timeline(user.to_string(), false, false, &twitter_token);
+
+    let (_timeline, feed) = timeline.start().await?;
+
+    Ok(feed
+        .choose(&mut rand::thread_rng())
+        .map(|tweet| format!("https://twitter.com/{}/status/{}", user, tweet.id)))
+}
+
 #[command("random-tweet")]
 #[description = "Get a random tweet for a user"]
 #[min_args(1)]
@@ -21,10 +34,17 @@ pub async fn random_tweet(ctx: &Context, msg: &Message, mut args: Args) -> Comma
     let token = data_lock.get::<TwitterTokenKey>().unwrap().clone();
     drop(data_lock);
 
-    let timeline = egg_mode::tweet::user_timeline(user.clone(), false, false, &token);
-
-    let (_timeline, feed) = match timeline.start().await {
-        Ok(data) => data,
+    match get_random_tweet_url(&token, &user).await {
+        Ok(Some(url)) => {
+            msg.channel_id.say(&ctx.http, url).await?;
+        }
+        Ok(None) => {
+            eprintln!("[WARN] No tweets retrieved for '{}'", user);
+            msg.channel_id
+                .say(&ctx.http, format!("No tweets retrieved for {}", user))
+                .await?;
+            return Ok(());
+        }
         Err(e) => {
             msg.channel_id
                 .say(&ctx.http, format!("Twitter Api Error: {}", e))
@@ -32,26 +52,7 @@ pub async fn random_tweet(ctx: &Context, msg: &Message, mut args: Args) -> Comma
             eprintln!("[WARN] Failed to get random tweet for {}: {}", user, e);
             return Ok(());
         }
-    };
-
-    let maybe_tweet = feed.choose(&mut rand::thread_rng());
-    let tweet = match maybe_tweet {
-        Some(tweet) => tweet,
-        None => {
-            eprintln!("[WARN] No tweets retrieved for '{}'", user);
-            msg.channel_id
-                .say(&ctx.http, format!("No tweets retrieved for {}", user))
-                .await?;
-            return Ok(());
-        }
-    };
-
-    msg.channel_id
-        .say(
-            &ctx.http,
-            format!("https://twitter.com/{}/status/{}", user, tweet.id),
-        )
-        .await?;
+    }
 
     Ok(())
 }
