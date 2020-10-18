@@ -52,10 +52,7 @@ use serenity::{
         },
         voice::VoiceState,
     },
-    prelude::{
-        Mutex,
-        TypeMapKey,
-    },
+    prelude::*,
 };
 use std::{
     collections::HashSet,
@@ -83,7 +80,8 @@ use tokio::runtime::Runtime as TokioRuntime;
     join,
     leave,
     play,
-    stop
+    stop,
+    random_tweet
 )]
 struct General;
 
@@ -110,6 +108,12 @@ struct VoiceManagerKey;
 
 impl TypeMapKey for VoiceManagerKey {
     type Value = Arc<Mutex<ClientVoiceManager>>;
+}
+
+pub struct TwitterTokenKey;
+
+impl TypeMapKey for TwitterTokenKey {
+    type Value = Arc<egg_mode::auth::Token>;
 }
 
 struct Handler;
@@ -205,6 +209,20 @@ fn main() {
         }
     };
 
+    let twitter_token = egg_mode::auth::Token::Bearer(config.twitter.bearer_token.clone());
+    match tokio_runtime.block_on(egg_mode::auth::verify_tokens(&twitter_token)) {
+        Ok(user) => {
+            println!(
+                "[INFO] Using twitter api from '{}({})'",
+                user.screen_name, user.id
+            );
+        }
+        Err(e) => {
+            // This might only be for api key/secret? warn only for now
+            eprintln!("[WARN] Invalid Twitter Token: {}", e);
+        }
+    }
+
     tokio_runtime.block_on(async {
         // Init Framework
         let framework = StandardFramework::new()
@@ -251,6 +269,7 @@ fn main() {
 
             client_data.insert::<RedditClientKey>(reddit_client);
             client_data.insert::<VoiceManagerKey>(Arc::clone(&client.voice_manager));
+            client_data.insert::<TwitterTokenKey>(Arc::new(twitter_token));
         }
 
         // Start Scheduler
