@@ -240,7 +240,7 @@ fn main() {
     let config = match load_config(Path::new(config_path)) {
         Ok(config) => config,
         Err(e) => {
-            error!("Error loading '{}': {:#?}", config_path, e);
+            error!("Error loading '{}': {}", config_path, e);
             return;
         }
     };
