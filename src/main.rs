@@ -1,5 +1,6 @@
 mod commands;
 mod config;
+mod logger;
 
 use clokwerk::{
     Interval::{
@@ -16,6 +17,11 @@ use commands::{
     *,
 };
 use config::load_config;
+use log::{
+    error,
+    info,
+    warn,
+};
 use rand::Rng;
 use serenity::{
     client::{
@@ -128,8 +134,8 @@ impl EventHandler for Handler {
             }
         }
 
-        println!("[INFO] Choosing Game State {}", random_number);
-        println!("[INFO] {} is connected!", ready.user.name);
+        info!("Choosing Game State {}", random_number);
+        info!("{} is connected!", ready.user.name);
     }
 
     async fn message(&self, _ctx: Context, _msg: Message) {}
@@ -218,18 +224,23 @@ async fn schedule_robotics_reminder(
             };
 
             // TODO: Ensure client is started and connected before running
-            let _ = announce_discord(&http, &cache, &msg).await.is_ok();
+            announce_discord(&http, &cache, &msg).await;
         });
     });
 }
 
 fn main() {
-    println!("[INFO] Loading Config.toml...");
+    if let Err(e) = logger::setup() {
+        eprintln!("Failed to setup logger: {}", e);
+        return;
+    };
+
+    info!("Loading Config.toml...");
     let config_path = "./Config.toml";
     let config = match load_config(Path::new(config_path)) {
         Ok(config) => config,
         Err(e) => {
-            eprintln!("[ERROR] Error loading '{}': {:#?}", config_path, e);
+            error!("Error loading '{}': {:#?}", config_path, e);
             return;
         }
     };
@@ -237,7 +248,7 @@ fn main() {
     let mut tokio_runtime = match TokioRuntime::new() {
         Ok(rt) => rt,
         Err(e) => {
-            eprintln!("[ERROR] Error starting tokio runtime: {}", e);
+            error!("Error starting tokio runtime: {}", e);
             return;
         }
     };
@@ -245,14 +256,11 @@ fn main() {
     let twitter_token = egg_mode::auth::Token::Bearer(config.twitter.bearer_token.clone());
     match tokio_runtime.block_on(egg_mode::auth::verify_tokens(&twitter_token)) {
         Ok(user) => {
-            println!(
-                "[INFO] Using twitter api from '{}({})'",
-                user.screen_name, user.id
-            );
+            info!("Using twitter api from '{}({})'", user.screen_name, user.id);
         }
         Err(e) => {
             // This might only be for api key/secret? warn only for now
-            eprintln!("[WARN] Invalid Twitter Token: {}", e);
+            warn!("Invalid Twitter Token: {}", e);
         }
     }
 
@@ -274,7 +282,7 @@ fn main() {
                             .await;
                     })
                 } else {
-                    println!("[ERROR] {:?} {}", error, msg.content);
+                    warn!("{:?} {}", error, msg.content);
                     Box::pin(async {})
                 }
             })
@@ -290,7 +298,7 @@ fn main() {
         {
             Ok(c) => c,
             Err(e) => {
-                eprintln!("Failed to start client: {}", e);
+                error!("Failed to start client: {}", e);
                 return;
             }
         };
@@ -306,7 +314,7 @@ fn main() {
         }
 
         // Start Scheduler
-        println!("[INFO] Starting Event Scheduler...");
+        info!("Starting Event Scheduler...");
         // TODO: Wrap in arc and rwlock for dynamically adding and removing events?
         let mut scheduler = Scheduler::new();
         const AFTER_SCHOOL_ANNOUNCE: &str = "@everyone Robotics Club after school today!";
@@ -342,27 +350,27 @@ fn main() {
             tokio::spawn(async move {
                 match tokio::signal::ctrl_c().await {
                     Ok(()) => {
-                        println!("[INFO] Beginning shutdown...");
+                        info!("Beginning shutdown...");
                         shard_manager.lock().await.shutdown_all().await;
                     }
                     Err(e) => {
-                        eprintln!("[WARN] Failed to register ctrl-c handler: {}", e);
+                        warn!("Failed to register ctrl-c handler: {}", e);
                     }
                 }
             });
         }
 
-        println!("[INFO] Logging in...");
+        info!("Logging in...");
         if let Err(why) = client.start().await {
-            println!("[ERROR] {}", why);
+            error!("Error running client: {}", why);
         }
 
-        println!("[INFO] Shutting down...");
+        info!("Shutting down...");
         scheduler_shutdown_notify.notify();
         drop(client); // Hopefully gets rid of all other Arcs...
 
         if let Err(e) = handle.await {
-            eprintln!("[ERROR] Scheduler Crashed: {}", e);
+            error!("Scheduler Crashed: {}", e);
         }
     });
 

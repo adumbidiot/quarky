@@ -25,6 +25,7 @@ exceptions = [
     { name = "ring", allow = [ "MIT", "ISC", "OpenSSL" ] },
     { name = "webpki-roots", allow = [ "MPL-2.0" ] },
     { name = "egg-mode", allow = [ "MPL-2.0" ] },
+    { name = "colored", allow = [ "MPL-2.0" ] },
 ]
 
 [[licenses.clarify]]

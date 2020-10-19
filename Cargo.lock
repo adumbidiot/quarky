@@ -69,6 +69,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "atty"
+version = "0.2.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8"
+dependencies = [
+ "hermit-abi",
+ "libc",
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "audiopus"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -165,6 +176,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f98552495ff36d2b2d5aca5ec09b50d5938ef7217d16c629e3f1261b92cec06"
 dependencies = [
  "chrono",
+]
+
+[[package]]
+name = "colored"
+version = "1.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4ffc801dacf156c5854b9df4f425a626539c3a6ef7893cc0c5084a23f0b6c59"
+dependencies = [
+ "atty",
+ "lazy_static",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -279,6 +301,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a51b8cf747471cb9499b6d59e59b0444f4c90eba8968c4e44874e92b5b64ace2"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "fern"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c9a4820f0ccc8a7afd67c39a0f1a0f4b07ca1725164271a64939d7aeb9af065"
+dependencies = [
+ "colored",
+ "log",
 ]
 
 [[package]]
@@ -956,16 +988,20 @@ dependencies = [
 name = "quarky"
 version = "0.0.2"
 dependencies = [
+ "chrono",
  "clokwerk",
  "egg-mode",
+ "fern",
  "http",
  "indexmap",
  "lazy_static",
+ "log",
  "rand",
  "reddit",
  "serde",
  "serde_json",
  "serenity",
+ "thiserror",
  "tokio",
  "toml",
  "zalgo",

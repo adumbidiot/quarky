@@ -1,5 +1,6 @@
 use crate::RedditClientKey;
 use indexmap::IndexMap;
+use log::info;
 use rand::Rng;
 use reddit::{
     PostHint,
@@ -99,7 +100,7 @@ impl RedditClient {
         });
 
         let new_posts = map_arc.populate(posts).await;
-        println!("[INFO] Reddit Cache populated with {} new posts", new_posts);
+        info!("Reddit Cache populated with {} new posts", new_posts);
 
         Ok(map_arc)
     }
@@ -159,12 +160,12 @@ async fn reddit(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             }
             RedditError::Json(e, _buffer) => {
                 msg.channel_id
-                    .say(&ctx.http, &format!("Json Error: {:#?}", e))
+                    .say(&ctx.http, format!("Json Error: {:#?}", e))
                     .await?;
             }
             _ => {
                 msg.channel_id
-                    .say(&ctx.http, &format!("Error: {:#?}", e))
+                    .say(&ctx.http, format!("Error: {:#?}", e))
                     .await?;
             }
         },
