@@ -1060,7 +1060,7 @@ dependencies = [
 [[package]]
 name = "reddit"
 version = "0.0.1"
-source = "git+https://github.com/adumbidiot/reddit-rs?rev=2451ce9#2451ce9137eb9251466b5846dbb01922eeb44b2c"
+source = "git+https://github.com/adumbidiot/reddit-rs?rev=f7c7b398e52a141389d1523fc6525f0f8728b501#f7c7b398e52a141389d1523fc6525f0f8728b501"
 dependencies = [
  "bytes",
  "http",
@@ -1068,6 +1068,8 @@ dependencies = [
  "hyper-tls",
  "serde",
  "serde_json",
+ "thiserror",
+ "url",
 ]
 
 [[package]]
@@ -1664,6 +1666,7 @@ dependencies = [
  "idna",
  "matches",
  "percent-encoding",
+ "serde",
 ]
 
 [[package]]

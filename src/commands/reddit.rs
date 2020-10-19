@@ -1,12 +1,14 @@
 use crate::RedditClientKey;
 use indexmap::IndexMap;
-use log::info;
+use log::{
+    info,
+    warn,
+};
 use rand::Rng;
 use reddit::{
+    Link,
     PostHint,
     RedditError,
-    SubRedditEntry,
-    SubRedditEntryData,
 };
 use serenity::{
     client::Context,
@@ -33,19 +35,16 @@ type SubRedditCache = Arc<RwLock<HashMap<String, EntryCache>>>;
 
 #[derive(Default, Clone)]
 struct EntryCache {
-    store: Arc<RwLock<IndexMap<String, Arc<SubRedditEntryData>>>>,
+    store: Arc<RwLock<IndexMap<String, Arc<Link>>>>,
     random_count: Arc<AtomicUsize>,
 }
 
 impl EntryCache {
-    async fn populate(&self, iter: impl Iterator<Item = SubRedditEntry>) -> usize {
+    async fn populate(&self, iter: impl Iterator<Item = Box<Link>>) -> usize {
         let mut map = self.store.write().await;
         let mut added = 0;
-        for post in iter {
-            if map
-                .insert(post.data.id.clone(), Arc::from(post.data))
-                .is_none()
-            {
+        for link in iter {
+            if map.insert(link.id.clone(), Arc::from(link)).is_none() {
                 added += 1;
             }
         }
@@ -53,12 +52,18 @@ impl EntryCache {
         added
     }
 
-    async fn get_random(&self) -> Option<Arc<SubRedditEntryData>> {
+    async fn get_random(&self) -> Option<Arc<Link>> {
         self.random_count.fetch_add(1, Ordering::SeqCst);
 
         let store = self.store.read().await;
+        let store_len = store.len();
+
+        if store_len == 0 {
+            return None;
+        }
+
         let mut rng = rand::thread_rng();
-        let index = rng.gen_range(0, store.len());
+        let index = rng.gen_range(0, store_len);
 
         store.get_index(index).map(|(_, v)| v).cloned()
     }
@@ -92,23 +97,28 @@ impl RedditClient {
             .clone();
 
         let list = self.client.get_subreddit(&subreddit, 100).await?;
-        let posts = list.data.children.into_iter().filter(|child| {
-            child.data.post_hint == Some(PostHint::Image)
-                || child.data.url.ends_with(".jpg")
-                || child.data.url.ends_with(".png")
-                || child.data.url.ends_with(".gif")
-        });
+        if let Some(listing) = list.data.into_listing() {
+            let posts = listing
+                .children
+                .into_iter()
+                .filter_map(|child| child.data.into_link())
+                .filter(|link| {
+                    link.post_hint == Some(PostHint::Image)
+                        || link.url.as_str().ends_with(".jpg")
+                        || link.url.as_str().ends_with(".png")
+                        || link.url.as_str().ends_with(".gif")
+                });
 
-        let new_posts = map_arc.populate(posts).await;
-        info!("Reddit Cache populated with {} new posts", new_posts);
+            let new_posts = map_arc.populate(posts).await;
+            info!("Reddit Cache populated with {} new posts", new_posts);
+        } else {
+            warn!("Missing listing for subreddit '{}'", subreddit);
+        }
 
         Ok(map_arc)
     }
 
-    pub async fn get_random_post(
-        &self,
-        subreddit: &str,
-    ) -> Result<Option<Arc<SubRedditEntryData>>, RedditError> {
+    pub async fn get_random_post(&self, subreddit: &str) -> Result<Option<Arc<Link>>, RedditError> {
         let entry_cache = self
             .cache
             .write()
@@ -154,21 +164,11 @@ async fn reddit(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 .say(&ctx.http, "Error: No Image Posts found")
                 .await?;
         }
-        Err(e) => match e {
-            RedditError::NotFound => {
-                msg.channel_id.say(&ctx.http, "Subreddit not found").await?;
-            }
-            RedditError::Json(e, _buffer) => {
-                msg.channel_id
-                    .say(&ctx.http, format!("Json Error: {:#?}", e))
-                    .await?;
-            }
-            _ => {
-                msg.channel_id
-                    .say(&ctx.http, format!("Error: {:#?}", e))
-                    .await?;
-            }
-        },
+        Err(e) => {
+            msg.channel_id
+                .say(&ctx.http, format!("Failed fetching posts: {}", e))
+                .await?;
+        }
     }
 
     Ok(())
