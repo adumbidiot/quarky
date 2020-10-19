@@ -271,20 +271,61 @@ fn main() {
             .group(&GENERAL_GROUP)
             .help(&HELP)
             .on_dispatch_error(|ctx, msg, error| {
-                if let DispatchError::Ratelimited(seconds) = error {
-                    Box::pin(async move {
-                        let _ = msg
-                            .channel_id
-                            .say(
-                                &ctx.http,
-                                format!("Try this again in {} second(s).", seconds.as_secs_f32()),
-                            )
-                            .await;
-                    })
-                } else {
-                    warn!("{:?} {}", error, msg.content);
-                    Box::pin(async {})
-                }
+                Box::pin(async move {
+                    match error {
+                        DispatchError::Ratelimited(duration) => {
+                            if let Err(e) = msg
+                                .channel_id
+                                .say(
+                                    &ctx.http,
+                                    format!(
+                                        "Try this again in {} second(s).",
+                                        duration.as_secs_f32()
+                                    ),
+                                )
+                                .await
+                            {
+                                warn!("Failed to send ratelimited warning message: {}", e);
+                            }
+                        }
+                        DispatchError::CommandDisabled(cmd) => {
+                            if let Err(e) = msg
+                                .channel_id
+                                .say(&ctx.http, format!("Command '{}' disabled.", cmd))
+                                .await
+                            {
+                                warn!("Failed to send disabled command warning message: {}", e);
+                            }
+                        }
+                        DispatchError::NotEnoughArguments { min, given } => {
+                            if let Err(e) = msg
+                                .channel_id
+                                .say(
+                                    &ctx.http,
+                                    format!("Need {} arguments but only got {}", min, given),
+                                )
+                                .await
+                            {
+                                warn!("Failed to send not enough args warning message: {}", e);
+                            }
+                        }
+                        DispatchError::TooManyArguments { max, given } => {
+                            if let Err(e) = msg
+                                .channel_id
+                                .say(
+                                    &ctx.http,
+                                    format!("Need only {} arguments but got {}", max, given),
+                                )
+                                .await
+                            {
+                                warn!("Failed to send too many args warning message: {}", e);
+                            }
+                        }
+                        _ => {
+                            warn!("DispatchError: {:?} | {}", error, msg.content);
+                        }
+                    }
+                })
             })
             .bucket("simple", |b| b.delay(1))
             .await
