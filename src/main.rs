@@ -1,5 +1,6 @@
 mod commands;
 mod config;
+mod logger;
 
 use clokwerk::{
     Interval::{
@@ -16,6 +17,11 @@ use commands::{
     *,
 };
 use config::load_config;
+use log::{
+    error,
+    info,
+    warn,
+};
 use rand::Rng;
 use serenity::{
     client::{
@@ -128,8 +134,8 @@ impl EventHandler for Handler {
             }
         }
 
-        println!("[INFO] Choosing Game State {}", random_number);
-        println!("[INFO] {} is connected!", ready.user.name);
+        info!("Choosing Game State {}", random_number);
+        info!("{} is connected!", ready.user.name);
     }
 
     async fn message(&self, _ctx: Context, _msg: Message) {}
@@ -218,18 +224,23 @@ async fn schedule_robotics_reminder(
             };
 
             // TODO: Ensure client is started and connected before running
-            let _ = announce_discord(&http, &cache, &msg).await.is_ok();
+            announce_discord(&http, &cache, &msg).await;
         });
     });
 }
 
 fn main() {
-    println!("[INFO] Loading Config.toml...");
+    if let Err(e) = logger::setup() {
+        eprintln!("Failed to setup logger: {}", e);
+        return;
+    };
+
+    info!("Loading Config.toml...");
     let config_path = "./Config.toml";
     let config = match load_config(Path::new(config_path)) {
         Ok(config) => config,
         Err(e) => {
-            eprintln!("[ERROR] Error loading '{}': {:#?}", config_path, e);
+            error!("Error loading '{}': {}", config_path, e);
             return;
         }
     };
@@ -237,7 +248,7 @@ fn main() {
     let mut tokio_runtime = match TokioRuntime::new() {
         Ok(rt) => rt,
         Err(e) => {
-            eprintln!("[ERROR] Error starting tokio runtime: {}", e);
+            error!("Error starting tokio runtime: {}", e);
             return;
         }
     };
@@ -245,14 +256,11 @@ fn main() {
     let twitter_token = egg_mode::auth::Token::Bearer(config.twitter.bearer_token.clone());
     match tokio_runtime.block_on(egg_mode::auth::verify_tokens(&twitter_token)) {
         Ok(user) => {
-            println!(
-                "[INFO] Using twitter api from '{}({})'",
-                user.screen_name, user.id
-            );
+            info!("Using twitter api from '{}({})'", user.screen_name, user.id);
         }
         Err(e) => {
             // This might only be for api key/secret? warn only for now
-            eprintln!("[WARN] Invalid Twitter Token: {}", e);
+            warn!("Invalid Twitter Token: {}", e);
         }
     }
 
@@ -263,20 +271,61 @@ fn main() {
             .group(&GENERAL_GROUP)
             .help(&HELP)
             .on_dispatch_error(|ctx, msg, error| {
-                if let DispatchError::Ratelimited(seconds) = error {
-                    Box::pin(async move {
-                        let _ = msg
-                            .channel_id
-                            .say(
-                                &ctx.http,
-                                format!("Try this again in {} second(s).", seconds.as_secs_f32()),
-                            )
-                            .await;
-                    })
-                } else {
-                    println!("[ERROR] {:?} {}", error, msg.content);
-                    Box::pin(async {})
-                }
+                Box::pin(async move {
+                    match error {
+                        DispatchError::Ratelimited(duration) => {
+                            if let Err(e) = msg
+                                .channel_id
+                                .say(
+                                    &ctx.http,
+                                    format!(
+                                        "Try this again in {} second(s).",
+                                        duration.as_secs_f32()
+                                    ),
+                                )
+                                .await
+                            {
+                                warn!("Failed to send ratelimited warning message: {}", e);
+                            }
+                        }
+                        DispatchError::CommandDisabled(cmd) => {
+                            if let Err(e) = msg
+                                .channel_id
+                                .say(&ctx.http, format!("Command '{}' disabled.", cmd))
+                                .await
+                            {
+                                warn!("Failed to send disabled command warning message: {}", e);
+                            }
+                        }
+                        DispatchError::NotEnoughArguments { min, given } => {
+                            if let Err(e) = msg
+                                .channel_id
+                                .say(
+                                    &ctx.http,
+                                    format!("Need {} arguments but only got {}", min, given),
+                                )
+                                .await
+                            {
+                                warn!("Failed to send not enough args warning message: {}", e);
+                            }
+                        }
+                        DispatchError::TooManyArguments { max, given } => {
+                            if let Err(e) = msg
+                                .channel_id
+                                .say(
+                                    &ctx.http,
+                                    format!("Need only {} arguments but got {}", max, given),
+                                )
+                                .await
+                            {
+                                warn!("Failed to send too many args warning message: {}", e);
+                            }
+                        }
+                        _ => {
+                            warn!("DispatchError: {:?} | {}", error, msg.content);
+                        }
+                    }
+                })
             })
             .bucket("simple", |b| b.delay(1))
             .await
@@ -290,7 +339,7 @@ fn main() {
         {
             Ok(c) => c,
             Err(e) => {
-                eprintln!("Failed to start client: {}", e);
+                error!("Failed to start client: {}", e);
                 return;
             }
         };
@@ -306,7 +355,7 @@ fn main() {
         }
 
         // Start Scheduler
-        println!("[INFO] Starting Event Scheduler...");
+        info!("Starting Event Scheduler...");
         // TODO: Wrap in arc and rwlock for dynamically adding and removing events?
         let mut scheduler = Scheduler::new();
         const AFTER_SCHOOL_ANNOUNCE: &str = "@everyone Robotics Club after school today!";
@@ -342,27 +391,27 @@ fn main() {
             tokio::spawn(async move {
                 match tokio::signal::ctrl_c().await {
                     Ok(()) => {
-                        println!("[INFO] Beginning shutdown...");
+                        info!("Beginning shutdown...");
                         shard_manager.lock().await.shutdown_all().await;
                     }
                     Err(e) => {
-                        eprintln!("[WARN] Failed to register ctrl-c handler: {}", e);
+                        warn!("Failed to register ctrl-c handler: {}", e);
                     }
                 }
             });
         }
 
-        println!("[INFO] Logging in...");
+        info!("Logging in...");
         if let Err(why) = client.start().await {
-            println!("[ERROR] {}", why);
+            error!("Error running client: {}", why);
         }
 
-        println!("[INFO] Shutting down...");
+        info!("Shutting down...");
         scheduler_shutdown_notify.notify();
         drop(client); // Hopefully gets rid of all other Arcs...
 
         if let Err(e) = handle.await {
-            eprintln!("[ERROR] Scheduler Crashed: {}", e);
+            error!("Scheduler Crashed: {}", e);
         }
     });
 

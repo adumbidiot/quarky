@@ -1,4 +1,5 @@
 use crate::TwitterTokenKey;
+use log::warn;
 use rand::prelude::SliceRandom;
 use serenity::{
     client::Context,
@@ -39,7 +40,7 @@ pub async fn random_tweet(ctx: &Context, msg: &Message, mut args: Args) -> Comma
             msg.channel_id.say(&ctx.http, url).await?;
         }
         Ok(None) => {
-            eprintln!("[WARN] No tweets retrieved for '{}'", user);
+            warn!("No tweets retrieved for '{}'", user);
             msg.channel_id
                 .say(&ctx.http, format!("No tweets retrieved for {}", user))
                 .await?;
@@ -49,7 +50,7 @@ pub async fn random_tweet(ctx: &Context, msg: &Message, mut args: Args) -> Comma
             msg.channel_id
                 .say(&ctx.http, format!("Twitter Api Error: {}", e))
                 .await?;
-            eprintln!("[WARN] Failed to get random tweet for {}: {}", user, e);
+            warn!("Failed to get random tweet for {}: {}", user, e);
             return Ok(());
         }
     }

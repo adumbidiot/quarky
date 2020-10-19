@@ -2,3 +2,4 @@
 **/*.rs.bk
 token.txt
 Config.toml
+quarky.log

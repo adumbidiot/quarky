@@ -1,4 +1,5 @@
 use lazy_static::lazy_static;
+use log::info;
 use rand::{
     seq::SliceRandom,
     Rng,
@@ -32,7 +33,7 @@ lazy_static! {
                 })
             })
             .collect();
-        println!("[INFO] Loaded {} Memorable movie quotes", ret.len());
+        info!("Loaded {} Memorable movie quotes", ret.len());
         ret
     };
     static ref QUOTE_PAIRS: Vec<Quote> = {
@@ -53,7 +54,7 @@ lazy_static! {
                 })
             })
             .collect();
-        println!("[INFO] Loaded {} movie quote pairs", ret.len());
+        info!("Loaded {} movie quote pairs", ret.len());
         ret
     };
 }
