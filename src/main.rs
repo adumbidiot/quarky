@@ -245,6 +245,8 @@ fn main() {
         }
     };
 
+    info!("Using prefix '{}'", config.prefix);
+
     let mut tokio_runtime = match TokioRuntime::new() {
         Ok(rt) => rt,
         Err(e) => {
@@ -267,7 +269,7 @@ fn main() {
     tokio_runtime.block_on(async {
         // Init Framework
         let framework = StandardFramework::new()
-            .configure(|c| c.prefix("~"))
+            .configure(|c| c.prefix(&config.prefix))
             .group(&GENERAL_GROUP)
             .help(&HELP)
             .on_dispatch_error(|ctx, msg, error| {

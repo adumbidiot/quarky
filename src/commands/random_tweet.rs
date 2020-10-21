@@ -1,6 +1,9 @@
 use crate::TwitterTokenKey;
 use log::warn;
-use rand::prelude::SliceRandom;
+use rand::{
+    prelude::SliceRandom,
+    rngs::OsRng,
+};
 use serenity::{
     client::Context,
     framework::standard::{
@@ -19,9 +22,8 @@ pub async fn get_random_tweet_url(
 
     let (_timeline, feed) = timeline.with_page_size(200).start().await?;
 
-    let mut rng = rand::thread_rng();
     Ok(feed
-        .choose(&mut rng)
+        .choose(&mut OsRng)
         .map(|tweet| format!("https://twitter.com/{}/status/{}", user, tweet.id)))
 }
 
