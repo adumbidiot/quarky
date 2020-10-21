@@ -17,8 +17,9 @@ pub async fn get_random_tweet_url(
 ) -> Result<Option<String>, egg_mode::error::Error> {
     let timeline = egg_mode::tweet::user_timeline(user.to_string(), false, false, &twitter_token);
 
-    let (_timeline, feed) = timeline.start().await?;
+    let (_timeline, feed) = timeline.with_page_size(200).start().await?;
 
+    let mut rng = rand::thread_rng();
     Ok(feed
         .choose(&mut rand::rngs::OsRng)
         .map(|tweet| format!("https://twitter.com/{}/status/{}", user, tweet.id)))
