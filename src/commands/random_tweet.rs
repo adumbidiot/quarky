@@ -20,7 +20,7 @@ pub async fn get_random_tweet_url(
     let (_timeline, feed) = timeline.start().await?;
 
     Ok(feed
-        .choose(&mut rand::thread_rng())
+        .choose(&mut rand::rngs::OsRng)
         .map(|tweet| format!("https://twitter.com/{}/status/{}", user, tweet.id)))
 }
 

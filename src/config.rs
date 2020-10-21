@@ -12,6 +12,7 @@ pub enum ConfigError {
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    pub prefix: String,
     pub token: String,
     pub twitter: TwitterConfig,
 }
