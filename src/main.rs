@@ -334,7 +334,7 @@ fn main() {
             .bucket("voice", |b| b.delay(1))
             .await;
 
-        let mut client = match Client::new(&config.token)
+        let mut client = match Client::builder(&config.token)
             .event_handler(Handler)
             .framework(framework)
             .await
