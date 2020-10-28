@@ -12,6 +12,10 @@ notice = "deny"
 ignore = [
 	# blocked on tokio bumping mio to 0.7
 	"RUSTSEC-2020-0016",
+    
+    # blocked on xsalsa20poly1305 being bumped to 0.6.0
+    "RUSTSEC-2020-0057",
+    "RUSTSEC-2020-0058",
 ]
 
 [licenses]
@@ -54,6 +58,13 @@ skip = [
 	
     # blocked on mio-named-pipes depending on a single version of miow/mio
     { name = "miow", version = "0.3.4" },
+    
+    # blocked on futures-util, hyper, and tracing-futures bumping pin-project-internal and pin-project to 1.0.x
+    { name = "pin-project-internal", version = "0.4.27" },
+    { name = "pin-project", version = "0.4.27" },
+    
+    # blocked on egg-mode, reqwest, rustls, and tungstenite bumping base64 to 0.13.x
+    { name = "base64", version = "0.12.3" },
 ]
 
 [sources]
