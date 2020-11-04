@@ -19,7 +19,7 @@ reddit = { git = "https://github.com/adumbidiot/reddit-rs", rev = "f7c7b398e52a1
 serde = { version = "1.0.117", features = [ "derive" ] }
 serde_json = "1.0.59"
 serenity = { version = "0.9.0-rc.4", features = [ "voice" ] }
-thiserror = "1.0.21"
+thiserror = "1.0.22"
 tokio = { version = "0.2.22", features = [ "rt-threaded" ] }
 toml = "0.5.7"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs", rev = "e630ea0" }
