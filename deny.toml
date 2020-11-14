@@ -65,6 +65,9 @@ skip = [
     
     # blocked on egg-mode, reqwest, rustls, and tungstenite bumping base64 to 0.13.x
     { name = "base64", version = "0.12.3" },
+    
+    # blocked on getrandom, log, mio, net2, openssl, socket2, tempfile, and tracing bumping cfg to 1.0.x
+    { name = "cfg-if", version = "1.0.0" },
 ]
 
 [sources]
