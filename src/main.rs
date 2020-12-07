@@ -147,6 +147,7 @@ impl EventHandler for Handler {
         old: Option<VoiceState>,
         new: VoiceState,
     ) {
+        #[allow(clippy::collapsible_match)]
         if let Some(old_id) = old.and_then(|old| old.channel_id) {
             if new
                 .user_id
