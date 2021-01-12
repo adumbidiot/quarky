@@ -13,7 +13,7 @@ fern = { version = "0.6.0", features = [ "colored" ] }
 http = "0.2.2"
 indexmap = "1.6.1"
 lazy_static = "1.4.0"
-log = "0.4.11"
+log = "0.4.13"
 rand = "0.7.3"
 reddit = { git = "https://github.com/adumbidiot/reddit-rs", rev = "f7c7b398e52a141389d1523fc6525f0f8728b501" }
 serde = { version = "1.0.118", features = [ "derive" ] }
