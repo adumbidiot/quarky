@@ -10,12 +10,9 @@ vulnerability = "deny"
 unmaintained = "deny"
 notice = "deny"
 ignore = [
-	# blocked on tokio bumping mio to 0.7
-	"RUSTSEC-2020-0016",
-    
-    # blocked on xsalsa20poly1305 being bumped to 0.6.0
-    "RUSTSEC-2020-0057",
-    "RUSTSEC-2020-0058",
+    # Blocked on syntex moving away from term.
+    # This is a build dep though, so its mostly ok
+    "RUSTSEC-2018-0015",
 ]
 
 [licenses]
@@ -47,27 +44,41 @@ license-files = [
 ]
 
 [bans]
-multiple-versions = "deny"
+multiple-versions = "warn"
 highlight = "all"
-skip = [
-	# blocked on tokio bumping mio to 0.7
-	{ name = "winapi", version = "0.2.8" },
-	
-    # blocked on serenity bumping async-tungstenite to 0.5.0
-    { name = "webpki-roots", version = "0.19.0" },
-	
-    # blocked on mio-named-pipes depending on a single version of miow/mio
-    { name = "miow", version = "0.3.4" },
-    
-    # blocked on futures-util, hyper, and tracing-futures bumping pin-project-internal and pin-project to 1.0.x
+skip = [	    
+    # Blocked on `tracing-futures` bumping `pin-project-interna`l and `pin-project` to `1.0.x`
     { name = "pin-project-internal", version = "0.4.27" },
     { name = "pin-project", version = "0.4.27" },
     
-    # blocked on egg-mode, reqwest, rustls, and tungstenite bumping base64 to 0.13.x
+    # Blocked on `crossbeam-utils` bumping `cfg-if` to `1.0.x`
+    { name = "cfg-if", version = "1.0.0" },
+    
+    # Blocked on `serenity` updating `async-tungstenite` to `0.13.x`
+    { name = "webpki-roots", version = "0.20.0" },
+    { name = "tungstenite", version = "0.11.1" },
+    { name = "bytes", version = "0.5.6" },
+    { name = "async-tungstenite", version = "0.11.0" },
     { name = "base64", version = "0.12.3" },
     
-    # blocked on getrandom, log, mio, net2, openssl, socket2, tempfile, and tracing bumping cfg to 1.0.x
-    { name = "cfg-if", version = "1.0.0" },
+    # Blocked on `pnet` removing `syntex`
+    { name = "unicode-xid", version = "0.0.3" },
+    { name = "log", version = "0.3.9" },
+    { name = "input_buffer", version = "0.3.1" },
+    { name = "bitflags", version = "0.5.0" },
+    { name = "winapi", version = "0.2.8" },
+    
+    # Blocked on `tungstenite` and `zalgo` updating `rand` to `0.8.x`
+    { name = "rand_core", version = "0.5.1" },
+    { name = "rand_chacha", version = "0.2.2" },
+    { name = "rand", version = "0.7.3" },
+    { name = "getrandom", version = "0.1.16" },
+    
+    # Blocked on `enum-primitive` updating `num-traits` to `0.2.x`
+    { name = "num-traits", version = "0.1.43" },
+    
+    # Blocked on `sha-1` updating `cpuid-bool` to `0.2.x`
+    { name = "cpuid-bool", version = "0.1.2" },
 ]
 
 [sources]
@@ -76,4 +87,5 @@ unknown-git = "deny"
 allow-git = [
 	"https://github.com/adumbidiot/zalgo-rs",
 	"https://github.com/adumbidiot/reddit-rs",
+    "https://github.com/egg-mode-rs/egg-mode",
 ]

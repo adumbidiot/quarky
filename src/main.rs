@@ -25,7 +25,6 @@ use log::{
 use rand::Rng;
 use serenity::{
     client::{
-        bridge::voice::ClientVoiceManager,
         Client,
         Context,
         EventHandler,
@@ -60,6 +59,7 @@ use serenity::{
     },
     prelude::*,
 };
+use songbird::SerenityInit;
 use std::{
     collections::HashSet,
     path::Path,
@@ -107,12 +107,6 @@ impl TypeMapKey for RedditClientKey {
     type Value = Arc<RedditClient>;
 }
 
-struct VoiceManagerKey;
-
-impl TypeMapKey for VoiceManagerKey {
-    type Value = Arc<Mutex<ClientVoiceManager>>;
-}
-
 pub struct TwitterTokenKey;
 
 impl TypeMapKey for TwitterTokenKey {
@@ -124,7 +118,7 @@ struct Handler;
 #[serenity::async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
-        let random_number: u8 = rand::thread_rng().gen_range(0, 2);
+        let random_number: u8 = rand::thread_rng().gen_range(0..2);
         match random_number {
             0 => {
                 ctx.set_activity(Activity::playing("with my tail")).await;
@@ -161,7 +155,7 @@ impl EventHandler for Handler {
                     #[allow(clippy::single_match)]
                     match ch {
                         Channel::Guild(channel) => {
-                            if let Ok(members) = channel.members(ctx.cache).await {
+                            if let Ok(members) = channel.members(&ctx.cache).await {
                                 if members.len() == 1
                                     && ctx
                                         .http
@@ -170,18 +164,21 @@ impl EventHandler for Handler {
                                         .map(|u| u.id == members[0].user.id)
                                         .unwrap_or(false)
                                 {
-                                    let manager_lock = ctx
-                                        .data
-                                        .read()
+                                    let manager = songbird::get(&ctx)
                                         .await
-                                        .get::<VoiceManagerKey>()
-                                        .cloned()
-                                        .unwrap();
-                                    let mut manager = manager_lock.lock().await;
+                                        .expect(
+                                            "Songbird Voice client placed in at initialisation.",
+                                        )
+                                        .clone();
                                     let has_handler = manager.get(channel.guild_id).is_some();
                                     if has_handler {
-                                        manager.leave(channel.guild_id);
-                                        manager.remove(channel.guild_id);
+                                        if let Err(e) = manager.leave(channel.guild_id).await {
+                                            warn!("Failed to leave voice channel: {}", e);
+                                        }
+
+                                        if let Err(e) = manager.remove(channel.guild_id).await {
+                                            warn!("Failed to remove voice channel: {}", e);
+                                        }
                                     }
                                 }
                             }
@@ -248,7 +245,7 @@ fn main() {
 
     info!("Using prefix '{}'", config.prefix);
 
-    let mut tokio_runtime = match TokioRuntime::new() {
+    let tokio_runtime = match TokioRuntime::new() {
         Ok(rt) => rt,
         Err(e) => {
             error!("Error starting tokio runtime: {}", e);
@@ -283,7 +280,7 @@ fn main() {
                                     &ctx.http,
                                     format!(
                                         "Try this again in {} second(s).",
-                                        duration.as_secs_f32()
+                                        duration.rate_limit.as_secs_f32()
                                     ),
                                 )
                                 .await
@@ -338,6 +335,7 @@ fn main() {
         let mut client = match Client::builder(&config.token)
             .event_handler(Handler)
             .framework(framework)
+            .register_songbird()
             .await
         {
             Ok(c) => c,
@@ -353,7 +351,6 @@ fn main() {
             let mut client_data = client.data.write().await;
 
             client_data.insert::<RedditClientKey>(reddit_client);
-            client_data.insert::<VoiceManagerKey>(Arc::clone(&client.voice_manager));
             client_data.insert::<TwitterTokenKey>(Arc::new(twitter_token));
         }
 
@@ -380,7 +377,7 @@ fn main() {
 
             while !should_exit {
                 should_exit = tokio::select! {
-                    _ = tokio::time::delay_for(frequency) => false,
+                    _ = tokio::time::sleep(frequency) => false,
                     _ = notify.notified() => true,
 
                 };
@@ -410,7 +407,7 @@ fn main() {
         }
 
         info!("Shutting down...");
-        scheduler_shutdown_notify.notify();
+        scheduler_shutdown_notify.notify_one();
         drop(client); // Hopefully gets rid of all other Arcs...
 
         if let Err(e) = handle.await {
