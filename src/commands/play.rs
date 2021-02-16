@@ -1,4 +1,3 @@
-use crate::VoiceManagerKey;
 use log::warn;
 use serenity::{
     client::Context,
@@ -8,7 +7,6 @@ use serenity::{
         CommandResult,
     },
     model::channel::Message,
-    voice,
 };
 
 #[command]
@@ -42,20 +40,17 @@ pub async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
         }
     };
 
-    let manager_lock = ctx
-        .data
-        .read()
+    let manager = songbird::get(&ctx)
         .await
-        .get::<VoiceManagerKey>()
-        .cloned()
-        .unwrap();
-    let mut manager = manager_lock.lock().await;
+        .expect("Songbird Voice client placed in at initialisation.")
+        .clone();
 
-    if let Some(handler) = manager.get_mut(guild_id) {
-        let source = match voice::ytdl(&url).await {
+    if let Some(handler) = manager.get(guild_id) {
+        let mut handler = handler.lock().await;
+        let source = match songbird::ytdl(&url).await {
             Ok(source) => source,
             Err(why) => {
-                warn!("Could not play audio: {}", why);
+                warn!("Could not play audio: {:?}", why);
                 msg.channel_id
                     .say(&ctx.http, "Error sourcing ffmpeg")
                     .await?;
@@ -63,7 +58,7 @@ pub async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
             }
         };
 
-        handler.play_only(source);
+        handler.play_source(source);
 
         msg.channel_id.say(&ctx.http, "Playing song").await?;
     } else {

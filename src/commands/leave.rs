@@ -1,4 +1,4 @@
-use crate::VoiceManagerKey;
+use log::warn;
 use serenity::{
     client::Context,
     framework::standard::{
@@ -22,20 +22,21 @@ async fn leave(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         }
     };
 
-    let manager_lock = ctx
-        .data
-        .read()
+    let manager = songbird::get(ctx)
         .await
-        .get::<VoiceManagerKey>()
-        .cloned()
-        .unwrap();
-
-    let mut manager = manager_lock.lock().await;
+        .expect("Songbird Voice client placed in at initialisation.")
+        .clone();
     let has_handler = manager.get(guild_id).is_some();
 
     if has_handler {
-        manager.leave(guild_id);
-        manager.remove(guild_id);
+        if let Err(e) = manager.leave(guild_id).await {
+            warn!("Failed to leave voice channel: {}", e);
+        }
+
+        if let Err(e) = manager.remove(guild_id).await {
+            warn!("Failed to remove voice channel: {}", e);
+        }
+
         msg.channel_id.say(&ctx.http, "Left voice channel").await?;
     } else {
         msg.reply(&ctx.http, "Not in a voice channel").await?;

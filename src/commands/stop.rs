@@ -1,4 +1,3 @@
-use crate::VoiceManagerKey;
 use serenity::{
     client::Context,
     framework::standard::{
@@ -22,17 +21,13 @@ pub async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         }
     };
 
-    let manager_lock = ctx
-        .data
-        .read()
+    let manager = songbird::get(&ctx)
         .await
-        .get::<VoiceManagerKey>()
-        .cloned()
-        .unwrap();
-    let mut manager = manager_lock.lock().await;
+        .expect("Songbird Voice client placed in at initialisation.")
+        .clone();
 
-    if let Some(handler) = manager.get_mut(guild_id) {
-        handler.stop();
+    if let Some(handler) = manager.get(guild_id) {
+        handler.lock().await.stop();
         msg.channel_id.say(&ctx.http, "Stopped").await?;
     } else {
         msg.channel_id

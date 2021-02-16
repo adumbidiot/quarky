@@ -1,4 +1,4 @@
-use crate::VoiceManagerKey;
+use log::error;
 use serenity::{
     client::Context,
     framework::standard::{
@@ -38,23 +38,25 @@ async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         }
     };
 
-    let manager_lock = ctx
-        .data
-        .read()
+    let manager = songbird::get(&ctx)
         .await
-        .get::<VoiceManagerKey>()
-        .cloned()
-        .unwrap();
+        .expect("Songbird Voice client placed in at initialisation.")
+        .clone();
 
-    let mut manager = manager_lock.lock().await;
-    if manager.join(guild.id, connect_to).is_some() {
-        msg.channel_id
-            .say(&ctx.http, &format!("Joined {}", connect_to.mention()))
-            .await?;
-    } else {
-        msg.channel_id
-            .say(&ctx.http, "Error joining the channel")
-            .await?;
+    let (_call, result) = manager.join(guild.id, connect_to).await;
+
+    match result {
+        Ok(()) => {
+            msg.channel_id
+                .say(&ctx.http, format!("Joined {}", connect_to.mention()))
+                .await?;
+        }
+        Err(e) => {
+            msg.channel_id
+                .say(&ctx.http, "Error joining the voice channel")
+                .await?;
+            error!("Failed to join the voice channel: {}", e);
+        }
     }
 
     Ok(())

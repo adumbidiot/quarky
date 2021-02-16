@@ -69,7 +69,7 @@ pub async fn movie_quote(ctx: &Context, msg: &Message, _args: Args) -> CommandRe
     {
         let mut rng = rand::thread_rng();
 
-        corpus_choice = rng.gen_range(0u8, 2);
+        corpus_choice = rng.gen_range(0u8..2);
 
         memorable_quote = MEMORABLE_QUOTES.choose(&mut rng);
         quote_pair = QUOTE_PAIRS.choose(&mut rng);
