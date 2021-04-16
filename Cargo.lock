@@ -1654,9 +1654,9 @@ dependencies = [
 
 [[package]]
 name = "songbird"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7f905ef041c2222d57d3e77868d5cdc616f42b7c506d21a87b14fc62784209e"
+checksum = "358efdd4b111021b0b7499fa087aa3cba8f01ae7210d37ab45620e4791c09ab8"
 dependencies = [
  "async-trait",
  "async-tungstenite 0.13.1",
@@ -1673,6 +1673,7 @@ dependencies = [
  "serenity",
  "serenity-voice-model",
  "spin_sleep",
+ "spinning_top",
  "streamcatcher",
  "tokio",
  "tracing",
