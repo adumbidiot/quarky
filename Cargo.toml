@@ -18,7 +18,7 @@ rand = "0.8.3"
 reddit = { git = "https://github.com/adumbidiot/reddit-rs", rev = "39257920c3a7eaaffc88407f36f498bffc397a5a" }
 serde = { version = "1.0.125", features = [ "derive" ] }
 serde_json = "1.0.64"
-serenity = { version = "0.10.5", features = [ "voice" ] }
+serenity = { version = "0.10.6", features = [ "voice" ] }
 songbird = "0.1.6"
 thiserror = "1.0.24"
 tokio = { version = "1.5.0", features = [ "rt-multi-thread", "signal" ] }
