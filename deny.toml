@@ -10,9 +10,8 @@ vulnerability = "deny"
 unmaintained = "deny"
 notice = "deny"
 ignore = [
-    # Blocked on syntex moving away from term.
-    # This is a build dep though, so its mostly ok
-    "RUSTSEC-2018-0015",
+    # Blocked on songbird updating their deps
+    "RUSTSEC-2021-0064",
 ]
 
 [licenses]
@@ -21,7 +20,7 @@ copyleft = "warn"
 confidence-threshold = 0.93
 default = "deny"
 private = { ignore = true }
-allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause" ]
+allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause", "MPL-2.0" ]
 exceptions = [
     { name = "ring", allow = [ "MIT", "ISC", "OpenSSL" ] },
     { name = "webpki-roots", allow = [ "MPL-2.0" ] },
@@ -62,11 +61,7 @@ skip = [
     { name = "base64", version = "0.12.3" },
     
     # Blocked on `pnet` removing `syntex`
-    { name = "unicode-xid", version = "0.0.3" },
-    { name = "log", version = "0.3.9" },
     { name = "input_buffer", version = "0.3.1" },
-    { name = "bitflags", version = "0.5.0" },
-    { name = "winapi", version = "0.2.8" },
     
     # Blocked on `tungstenite` and `zalgo` updating `rand` to `0.8.x`
     { name = "rand_core", version = "0.5.1" },
