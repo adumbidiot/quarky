@@ -9,11 +9,7 @@ targets = [
 vulnerability = "deny"
 unmaintained = "deny"
 notice = "deny"
-ignore = [
-    # Blocked on syntex moving away from term.
-    # This is a build dep though, so its mostly ok
-    "RUSTSEC-2018-0015",
-]
+ignore = []
 
 [licenses]
 unlicensed = "deny"
@@ -21,12 +17,9 @@ copyleft = "warn"
 confidence-threshold = 0.93
 default = "deny"
 private = { ignore = true }
-allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause" ]
+allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause", "MPL-2.0" ]
 exceptions = [
     { name = "ring", allow = [ "MIT", "ISC", "OpenSSL" ] },
-    { name = "webpki-roots", allow = [ "MPL-2.0" ] },
-    { name = "egg-mode", allow = [ "MPL-2.0" ] },
-    { name = "colored", allow = [ "MPL-2.0" ] },
 ]
 
 [[licenses.clarify]]
@@ -46,11 +39,7 @@ license-files = [
 [bans]
 multiple-versions = "warn"
 highlight = "all"
-skip = [	    
-    # Blocked on `tracing-futures` bumping `pin-project-interna`l and `pin-project` to `1.0.x`
-    { name = "pin-project-internal", version = "0.4.27" },
-    { name = "pin-project", version = "0.4.27" },
-    
+skip = [	        
     # Blocked on `crossbeam-utils` bumping `cfg-if` to `1.0.x`
     { name = "cfg-if", version = "1.0.0" },
     
@@ -62,11 +51,7 @@ skip = [
     { name = "base64", version = "0.12.3" },
     
     # Blocked on `pnet` removing `syntex`
-    { name = "unicode-xid", version = "0.0.3" },
-    { name = "log", version = "0.3.9" },
     { name = "input_buffer", version = "0.3.1" },
-    { name = "bitflags", version = "0.5.0" },
-    { name = "winapi", version = "0.2.8" },
     
     # Blocked on `tungstenite` and `zalgo` updating `rand` to `0.8.x`
     { name = "rand_core", version = "0.5.1" },
@@ -76,9 +61,53 @@ skip = [
     
     # Blocked on `enum-primitive` updating `num-traits` to `0.2.x`
     { name = "num-traits", version = "0.1.43" },
+]
+
+# Mostly soundness denies since the advisory lacks a section for soundess bugs
+deny = [            
+    # https://github.com/RustSec/advisory-db/issues/305
+    { name = "rental", version = "*" },
     
-    # Blocked on `sha-1` updating `cpuid-bool` to `0.2.x`
-    { name = "cpuid-bool", version = "0.1.2" },
+    # Appears to be moving towards integrating rio more tightly for io_uring support
+    { name = "sled", version = "*" },
+    
+    # The general idea seems unsound, and the current version does contain UB.
+    # https://github.com/Kimundi/owning-ref-rs/issues/71
+    { name = "owning_ref", version = "*" },
+    
+    # It's a crate only intended for testing; people insist on using it for some reason.
+    # https://crates.io/crates/markup5ever_rcdom/0.1.0
+    { name = "markup5ever_rcdom", version = "0.1.0" },
+    
+    # https://github.com/RustSec/advisory-db/issues/867
+    { name = "rusttype", version = "*" },
+    
+    # https://github.com/RustSec/advisory-db/issues/826
+    { name = "totally-safe-transmute", version = "*" },
+    
+    # https://github.com/RustSec/advisory-db/issues/743
+    { name = "fast-floats", version = "*" },
+    
+    # https://github.com/RustSec/advisory-db/issues/880
+    { name = "nalgebra", version = "<0.26.2" },
+    
+    # https://github.com/RustSec/advisory-db/issues/913
+    { name = "hexchat", version = ">=0.3.0" },
+    
+    # https://github.com/RustSec/advisory-db/issues/613
+    { name = "out-reference", version = "*" },
+    
+    # https://github.com/RustSec/advisory-db/issues/235
+    { name = "shamir", version = "<2.0.0" },
+    
+    # https://github.com/RustSec/advisory-db/pull/671/files
+    { name = "raw-cpuid", version = ">3.1.0" },
+    
+    # https://github.com/RustSec/advisory-db/pull/649
+    { name = "derive-com-impl", version = "<=0.1.1" },
+    
+    # https://github.com/RustSec/advisory-db/pull/593
+    { name = "bite", version = "*" },
 ]
 
 [sources]
