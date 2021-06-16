@@ -43,22 +43,6 @@ skip = [
     # Blocked on `crossbeam-utils` bumping `cfg-if` to `1.0.x`
     { name = "cfg-if", version = "1.0.0" },
     
-    # Blocked on `serenity` updating `async-tungstenite` to `0.13.x`
-    { name = "webpki-roots", version = "0.20.0" },
-    { name = "tungstenite", version = "0.11.1" },
-    { name = "bytes", version = "0.5.6" },
-    { name = "async-tungstenite", version = "0.11.0" },
-    { name = "base64", version = "0.12.3" },
-    
-    # Blocked on `pnet` removing `syntex`
-    { name = "input_buffer", version = "0.3.1" },
-    
-    # Blocked on `tungstenite` and `zalgo` updating `rand` to `0.8.x`
-    { name = "rand_core", version = "0.5.1" },
-    { name = "rand_chacha", version = "0.2.2" },
-    { name = "rand", version = "0.7.3" },
-    { name = "getrandom", version = "0.1.16" },
-    
     # Blocked on `enum-primitive` updating `num-traits` to `0.2.x`
     { name = "num-traits", version = "0.1.43" },
 ]
@@ -117,4 +101,6 @@ allow-git = [
 	"https://github.com/adumbidiot/zalgo-rs",
 	"https://github.com/adumbidiot/reddit-rs",
     "https://github.com/egg-mode-rs/egg-mode",
+    "https://github.com/adumbidiot/songbird",
+    "https://github.com/serenity-rs/serenity"
 ]

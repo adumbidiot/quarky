@@ -270,7 +270,7 @@ fn main() {
             .configure(|c| c.prefix(&config.prefix))
             .group(&GENERAL_GROUP)
             .help(&HELP)
-            .on_dispatch_error(|ctx, msg, error| {
+            .on_dispatch_error(|ctx, msg, error, cmd_name| {
                 Box::pin(async move {
                     match error {
                         DispatchError::Ratelimited(duration) => {
@@ -288,10 +288,10 @@ fn main() {
                                 warn!("Failed to send ratelimited warning message: {}", e);
                             }
                         }
-                        DispatchError::CommandDisabled(cmd) => {
+                        DispatchError::CommandDisabled => {
                             if let Err(e) = msg
                                 .channel_id
-                                .say(&ctx.http, format!("Command '{}' disabled.", cmd))
+                                .say(&ctx.http, format!("Command '{}' disabled.", cmd_name))
                                 .await
                             {
                                 warn!("Failed to send disabled command warning message: {}", e);
