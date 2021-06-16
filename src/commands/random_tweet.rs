@@ -18,7 +18,7 @@ pub async fn get_random_tweet_url(
     twitter_token: &egg_mode::auth::Token,
     user: &str,
 ) -> Result<Option<String>, egg_mode::error::Error> {
-    let timeline = egg_mode::tweet::user_timeline(user.to_string(), false, false, &twitter_token);
+    let timeline = egg_mode::tweet::user_timeline(user.to_string(), false, false, twitter_token);
 
     let (_timeline, feed) = timeline.with_page_size(200).start().await?;
 

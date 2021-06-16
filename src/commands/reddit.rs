@@ -96,7 +96,7 @@ impl RedditClient {
             .or_default()
             .clone();
 
-        let list = self.client.get_subreddit(&subreddit, 100).await?;
+        let list = self.client.get_subreddit(subreddit, 100).await?;
         if let Some(listing) = list.data.into_listing() {
             let posts = listing
                 .children
