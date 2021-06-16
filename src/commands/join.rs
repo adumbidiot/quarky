@@ -38,7 +38,7 @@ async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         }
     };
 
-    let manager = songbird::get(&ctx)
+    let manager = songbird::get(ctx)
         .await
         .expect("Songbird Voice client placed in at initialisation.")
         .clone();
