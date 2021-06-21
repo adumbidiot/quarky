@@ -21,7 +21,7 @@ serde_json = "1.0.64"
 serenity = { git = "https://github.com/serenity-rs/serenity", branch = "next" }
 songbird = "0.2.0-beta.2"
 thiserror = "1.0.25"
-tokio = { version = "1.6.1", features = [ "rt-multi-thread", "signal" ] }
+tokio = { version = "1.7.1", features = [ "rt-multi-thread", "signal" ] }
 toml = "0.5.8"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs", rev = "847e0adfc1f1bf6b9a5903b39bf8ca5b9a19c84c" }
 
