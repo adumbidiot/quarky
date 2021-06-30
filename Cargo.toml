@@ -11,7 +11,7 @@ chrono = "0.4.19"
 egg-mode = "0.15.0"
 fern = { version = "0.6.0", features = [ "colored" ] }
 http = "0.2.4"
-indexmap = "1.6.2"
+indexmap = "1.7.0"
 lazy_static = "1.4.0"
 log = "0.4.14"
 rand = "0.8.3"
