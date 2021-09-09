@@ -210,8 +210,8 @@ dependencies = [
 
 [[package]]
 name = "command_attr"
-version = "0.3.6"
-source = "git+https://github.com/serenity-rs/serenity?branch=next#75015f398040e2f1dc43dca2dc7b620d16086c6d"
+version = "0.3.7"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#5348e9c56909d7c534717825be20763acb33336d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -286,6 +286,7 @@ checksum = "e77a43b28d0668df09411cb0bc9a8c2adc40f9a048afe863e05fd43251e8e39c"
 dependencies = [
  "cfg-if 1.0.0",
  "num_cpus",
+ "serde",
 ]
 
 [[package]]
@@ -1432,8 +1433,8 @@ dependencies = [
 
 [[package]]
 name = "serenity"
-version = "0.10.7"
-source = "git+https://github.com/serenity-rs/serenity?branch=next#75015f398040e2f1dc43dca2dc7b620d16086c6d"
+version = "0.10.9"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#5348e9c56909d7c534717825be20763acb33336d"
 dependencies = [
  "async-trait",
  "async-tungstenite",
@@ -1442,8 +1443,12 @@ dependencies = [
  "bytes",
  "chrono",
  "command_attr",
+ "dashmap",
  "flate2",
  "futures",
+ "mime",
+ "mime_guess",
+ "parking_lot",
  "percent-encoding",
  "reqwest",
  "serde",
@@ -1459,7 +1464,7 @@ dependencies = [
 [[package]]
 name = "serenity-voice-model"
 version = "0.1.0"
-source = "git+https://github.com/serenity-rs/serenity?branch=next#75015f398040e2f1dc43dca2dc7b620d16086c6d"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#5348e9c56909d7c534717825be20763acb33336d"
 dependencies = [
  "bitflags",
  "enum_primitive",
