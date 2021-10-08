@@ -58,7 +58,23 @@ dependencies = [
  "pin-project-lite",
  "tokio",
  "tokio-rustls",
- "tungstenite",
+ "tungstenite 0.13.0",
+ "webpki-roots",
+]
+
+[[package]]
+name = "async-tungstenite"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "742cc7dcb20b2f84a42f4691aa999070ec7e78f8e7e7438bf14be7017b44907e"
+dependencies = [
+ "futures-io",
+ "futures-util",
+ "log",
+ "pin-project-lite",
+ "tokio",
+ "tokio-rustls",
+ "tungstenite 0.15.0",
  "webpki-roots",
 ]
 
@@ -210,8 +226,8 @@ dependencies = [
 
 [[package]]
 name = "command_attr"
-version = "0.3.6"
-source = "git+https://github.com/serenity-rs/serenity?branch=next#75015f398040e2f1dc43dca2dc7b620d16086c6d"
+version = "0.3.7"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#605b7f733fa64cbdfed65e4ec8bde483700ed0b8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -286,6 +302,7 @@ checksum = "e77a43b28d0668df09411cb0bc9a8c2adc40f9a048afe863e05fd43251e8e39c"
 dependencies = [
  "cfg-if 1.0.0",
  "num_cpus",
+ "serde",
 ]
 
 [[package]]
@@ -1432,18 +1449,22 @@ dependencies = [
 
 [[package]]
 name = "serenity"
-version = "0.10.7"
-source = "git+https://github.com/serenity-rs/serenity?branch=next#75015f398040e2f1dc43dca2dc7b620d16086c6d"
+version = "0.10.9"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#605b7f733fa64cbdfed65e4ec8bde483700ed0b8"
 dependencies = [
  "async-trait",
- "async-tungstenite",
+ "async-tungstenite 0.15.0",
  "base64",
  "bitflags",
  "bytes",
  "chrono",
  "command_attr",
+ "dashmap",
  "flate2",
  "futures",
+ "mime",
+ "mime_guess",
+ "parking_lot",
  "percent-encoding",
  "reqwest",
  "serde",
@@ -1459,7 +1480,7 @@ dependencies = [
 [[package]]
 name = "serenity-voice-model"
 version = "0.1.0"
-source = "git+https://github.com/serenity-rs/serenity?branch=next#75015f398040e2f1dc43dca2dc7b620d16086c6d"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#605b7f733fa64cbdfed65e4ec8bde483700ed0b8"
 dependencies = [
  "bitflags",
  "enum_primitive",
@@ -1518,7 +1539,7 @@ version = "0.2.0-beta.3"
 source = "git+https://github.com/adumbidiot/songbird?branch=audiopus-0.3.0#9fae49ed0cbc8154904a0a2631fa2b3912f2899a"
 dependencies = [
  "async-trait",
- "async-tungstenite",
+ "async-tungstenite 0.13.1",
  "audiopus",
  "byteorder",
  "dashmap",
@@ -1826,6 +1847,27 @@ dependencies = [
  "utf-8",
  "webpki",
  "webpki-roots",
+]
+
+[[package]]
+name = "tungstenite"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "983d40747bce878d2fb67d910dcb8bd3eca2b2358540c3cc1b98c027407a3ae3"
+dependencies = [
+ "base64",
+ "byteorder",
+ "bytes",
+ "http",
+ "httparse",
+ "log",
+ "rand",
+ "rustls",
+ "sha-1",
+ "thiserror",
+ "url",
+ "utf-8",
+ "webpki",
 ]
 
 [[package]]
