@@ -1,0 +1,9 @@
+# Fill out this field with your token
+# token = "[TOKEN]"
+
+# Put your desired bot prefix here
+prefix = "~" 
+
+[twitter]
+# Put your bearer token here
+# bearer_token = "[BEARER_TOKEN]"

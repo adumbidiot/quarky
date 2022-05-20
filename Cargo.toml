@@ -2,13 +2,15 @@
 name = "quarky"
 version = "0.0.2"
 authors = [ "adumbidiot <nathaniel.daniel23@outlook.com>" ]
-edition = "2018"
+edition = "2021"
 publish = false
 
 [dependencies]
+anyhow = "1.0.57"
+camino = "1.0.9"
 clokwerk = "0.3.5"
 chrono = "0.4.19"
-egg-mode = "0.16.0"
+egg-mode = { version = "0.16.0", default-features = false, features = [ "rustls" ] }
 fern = { version = "0.6.1", features = [ "colored" ] }
 http = "0.2.7"
 indexmap = "1.8.1"
@@ -24,6 +26,7 @@ thiserror = "1.0.31"
 tokio = { version = "1.18.2", features = [ "rt-multi-thread", "signal" ] }
 toml = "0.5.9"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs" }
+argh = "0.1.7"
 
 [profile.release]
 lto = "fat"
@@ -38,3 +41,24 @@ debug-assertions = false
 
 # Updated songbird + support for cross-compiling, like msvc -> mingw
 songbird = { git = "https://github.com/FelixMcFelix/songbird", branch = "symphonia" }
+
+[package.metadata.deb]
+name = "quarky"
+depends = ""
+assets = [
+    [ "target/release/quarky", "usr/bin/", "700" ],
+    [ "deb-config.toml", "etc/quarky/config.toml", "600" ],
+]
+conf-files = [
+    "etc/quarky/config.toml",
+]
+maintainer-scripts = "debian/"
+
+[package.metadata.deb.systemd-units]
+enable = true
+start = true
+
+[package.metadata.rpi-deploy]
+targets = [
+    "armv7-unknown-linux-gnueabihf",
+]
