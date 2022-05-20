@@ -119,7 +119,6 @@ unknown-git = "deny"
 allow-git = [
 	"https://github.com/adumbidiot/zalgo-rs",
 	"https://github.com/adumbidiot/reddit-rs",
-    "https://github.com/egg-mode-rs/egg-mode",
     # "https://github.com/adumbidiot/songbird",
     "https://github.com/serenity-rs/serenity",
     "https://github.com/FelixMcFelix/songbird",

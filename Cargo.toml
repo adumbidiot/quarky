@@ -8,21 +8,21 @@ publish = false
 [dependencies]
 clokwerk = "0.3.5"
 chrono = "0.4.19"
-egg-mode = "0.15.0"
-fern = { version = "0.6.0", features = [ "colored" ] }
-http = "0.2.4"
-indexmap = "1.7.0"
+egg-mode = "0.16.0"
+fern = { version = "0.6.1", features = [ "colored" ] }
+http = "0.2.7"
+indexmap = "1.8.1"
 lazy_static = "1.4.0"
-log = "0.4.14"
-rand = "0.8.3"
+log = "0.4.17"
+rand = "0.8.5"
 reddit = { git = "https://github.com/adumbidiot/reddit-rs" }
-serde = { version = "1.0.126", features = [ "derive" ] }
-serde_json = "1.0.64"
+serde = { version = "1.0.137", features = [ "derive" ] }
+serde_json = "1.0.81"
 serenity = { git = "https://github.com/serenity-rs/serenity", branch = "next" }
-songbird = "0.2.0-beta.2"
-thiserror = "1.0.25"
-tokio = { version = "1.7.1", features = [ "rt-multi-thread", "signal" ] }
-toml = "0.5.8"
+songbird = "0.2.2"
+thiserror = "1.0.31"
+tokio = { version = "1.18.2", features = [ "rt-multi-thread", "signal" ] }
+toml = "0.5.9"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs" }
 
 [profile.release]
@@ -33,9 +33,6 @@ opt-level = 3
 debug-assertions = false
 
 [patch.crates-io]
-# Tokio 1.0 Support
-egg-mode = { git = "https://github.com/egg-mode-rs/egg-mode", rev = "6b81073eba9c3b123ca0e80bdb5ef61d1758f131" }
-
 # # Support for cross-compiling, like msvc -> mingw
 # songbird = { git = "https://github.com/adumbidiot/songbird", branch = "audiopus-0.3.0" }
 
