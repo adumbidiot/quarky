@@ -26,6 +26,7 @@ thiserror = "1.0.31"
 tokio = { version = "1.18.2", features = [ "rt-multi-thread", "signal" ] }
 toml = "0.5.9"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs" }
+argh = "0.1.7"
 
 [profile.release]
 lto = "fat"

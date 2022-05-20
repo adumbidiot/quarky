@@ -1,8 +1,17 @@
+mod cli_options;
 mod commands;
 mod config;
 mod logger;
 
-use self::config::Config;
+use self::{
+    cli_options::CliOptions,
+    commands::{
+        announce::announce_discord,
+        reddit::RedditClient,
+        *,
+    },
+    config::Config,
+};
 use anyhow::Context as _;
 use clokwerk::{
     Interval::{
@@ -12,11 +21,6 @@ use clokwerk::{
         Tuesday,
     },
     Scheduler,
-};
-use commands::{
-    announce::announce_discord,
-    reddit::RedditClient,
-    *,
 };
 use log::{
     error,
@@ -94,10 +98,11 @@ async fn help(
     groups: &[&'static CommandGroup],
     owners: HashSet<UserId>,
 ) -> CommandResult {
-    if let Err(e) =
-        help_commands::with_embeds(context, msg, args, help_options, groups, owners).await
+    if let Err(e) = help_commands::with_embeds(context, msg, args, help_options, groups, owners)
+        .await
+        .context("failed to send help")
     {
-        error!("failed to send help: {}", e);
+        error!("{:?}", e);
     }
     Ok(())
 }
@@ -161,18 +166,16 @@ impl EventHandler for Handler {
                                 {
                                     let manager = songbird::get(&ctx)
                                         .await
-                                        .expect(
-                                            "Songbird Voice client placed in at initialisation.",
-                                        )
+                                        .expect("missing songbird data")
                                         .clone();
                                     let has_handler = manager.get(channel.guild_id).is_some();
                                     if has_handler {
                                         if let Err(e) = manager.leave(channel.guild_id).await {
-                                            warn!("Failed to leave voice channel: {}", e);
+                                            warn!("failed to leave voice channel: {}", e);
                                         }
 
                                         if let Err(e) = manager.remove(channel.guild_id).await {
-                                            warn!("Failed to remove voice channel: {}", e);
+                                            warn!("failed to remove voice channel: {}", e);
                                         }
                                     }
                                 }
@@ -222,19 +225,19 @@ async fn schedule_robotics_reminder(
     });
 }
 
-fn setup() -> anyhow::Result<Config> {
+fn setup(cli_options: CliOptions) -> anyhow::Result<Config> {
     self::logger::setup().context("failed to setup logger")?;
 
-    let config_path = "./Config.toml";
-    info!("loading config.toml...");
-    let config = Config::load(config_path)
-        .with_context(|| format!("failed to load `{}`", config_path))?;
+    info!("loading config @ `{}`...", cli_options.config);
+    let config = Config::load(&cli_options.config)
+        .with_context(|| format!("failed to load `{}`", &cli_options.config))?;
 
     Ok(config)
 }
 
 fn main() {
-    let config = match setup() {
+    let cli_options = argh::from_env();
+    let config = match setup(cli_options) {
         Ok(config) => config,
         Err(error) => {
             eprintln!("{:?}", error);
