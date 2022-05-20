@@ -51,10 +51,7 @@ use serenity::{
             Activity,
             Ready,
         },
-        id::{
-            GuildId,
-            UserId,
-        },
+        id::UserId,
         voice::VoiceState,
     },
     prelude::*,
@@ -97,7 +94,11 @@ async fn help(
     groups: &[&'static CommandGroup],
     owners: HashSet<UserId>,
 ) -> CommandResult {
-    help_commands::with_embeds(context, msg, args, help_options, groups, owners).await;
+    if let Err(e) =
+        help_commands::with_embeds(context, msg, args, help_options, groups, owners).await
+    {
+        error!("failed to send help: {}", e);
+    }
     Ok(())
 }
 
@@ -134,13 +135,7 @@ impl EventHandler for Handler {
 
     async fn message(&self, _ctx: Context, _msg: Message) {}
 
-    async fn voice_state_update(
-        &self,
-        ctx: Context,
-        _: Option<GuildId>,
-        old: Option<VoiceState>,
-        new: VoiceState,
-    ) {
+    async fn voice_state_update(&self, ctx: Context, old: Option<VoiceState>, new: VoiceState) {
         #[allow(clippy::collapsible_match)]
         if let Some(old_id) = old.and_then(|old| old.channel_id) {
             if new
@@ -332,11 +327,14 @@ fn main() {
             .bucket("voice", |b| b.delay(1))
             .await;
 
-        let mut client = match Client::builder(&config.token)
-            .event_handler(Handler)
-            .framework(framework)
-            .register_songbird()
-            .await
+        let mut client = match Client::builder(
+            &config.token,
+            GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT,
+        )
+        .event_handler(Handler)
+        .framework(framework)
+        .register_songbird()
+        .await
         {
             Ok(c) => c,
             Err(e) => {

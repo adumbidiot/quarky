@@ -8,7 +8,6 @@ use rand::Rng;
 use reddit::{
     Link,
     PostHint,
-    RedditError,
 };
 use serenity::{
     client::Context,
@@ -31,11 +30,11 @@ use std::{
     },
 };
 
-type SubRedditCache = Arc<RwLock<HashMap<String, EntryCache>>>;
+type SubRedditCache = Arc<RwLock<HashMap<Box<str>, EntryCache>>>;
 
 #[derive(Default, Clone)]
 struct EntryCache {
-    store: Arc<RwLock<IndexMap<String, Arc<Link>>>>,
+    store: Arc<RwLock<IndexMap<Box<str>, Arc<Link>>>>,
     random_count: Arc<AtomicUsize>,
 }
 
@@ -75,7 +74,8 @@ impl EntryCache {
 }
 
 pub struct RedditClient {
-    client: reddit::Client,
+    /// The inner reddit client
+    pub client: reddit::Client,
     cache: SubRedditCache,
 }
 
@@ -87,12 +87,12 @@ impl RedditClient {
         }
     }
 
-    async fn populate_cache(&self, subreddit: &str) -> Result<EntryCache, RedditError> {
+    async fn populate_cache(&self, subreddit: &str) -> Result<EntryCache, reddit::Error> {
         let map_arc = self
             .cache
             .write()
             .await
-            .entry(String::from(subreddit))
+            .entry(subreddit.into())
             .or_default()
             .clone();
 
@@ -104,9 +104,9 @@ impl RedditClient {
                 .filter_map(|child| child.data.into_link())
                 .filter(|link| {
                     link.post_hint == Some(PostHint::Image)
-                        || link.url.as_str().ends_with(".jpg")
-                        || link.url.as_str().ends_with(".png")
-                        || link.url.as_str().ends_with(".gif")
+                        || link.url.ends_with(".jpg")
+                        || link.url.ends_with(".png")
+                        || link.url.ends_with(".gif")
                 });
 
             let new_posts = map_arc.populate(posts).await;
@@ -118,12 +118,15 @@ impl RedditClient {
         Ok(map_arc)
     }
 
-    pub async fn get_random_post(&self, subreddit: &str) -> Result<Option<Arc<Link>>, RedditError> {
+    pub async fn get_random_post(
+        &self,
+        subreddit: &str,
+    ) -> Result<Option<Arc<Link>>, reddit::Error> {
         let entry_cache = self
             .cache
             .write()
             .await
-            .entry(String::from(subreddit))
+            .entry(subreddit.into())
             .or_default()
             .clone();
 
@@ -157,7 +160,7 @@ async fn reddit(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
     match client.get_random_post(&subreddit).await {
         Ok(Some(post)) => {
-            msg.channel_id.say(&ctx.http, &post.url).await?;
+            msg.channel_id.say(&ctx.http, &*post.url).await?;
         }
         Ok(None) => {
             msg.channel_id

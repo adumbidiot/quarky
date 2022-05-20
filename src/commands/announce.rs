@@ -12,6 +12,7 @@ use serenity::{
     },
     http::Http,
     model::channel::{
+        Channel,
         ChannelType,
         Message,
     },
@@ -31,11 +32,18 @@ pub async fn announce(ctx: &Context, _msg: &Message, mut args: Args) -> CommandR
 }
 
 pub async fn announce_discord(http: &Http, cache: &Cache, data: &str) {
-    for guild_id in cache.guilds().await.into_iter() {
-        if let Some(guild) = cache.guild(guild_id).await {
-            let channel = guild.channels.values().find(|channel| {
-                channel.name == "announcements" && channel.kind == ChannelType::Text
-            });
+    for guild_id in cache.guilds().into_iter() {
+        if let Some(guild) = cache.guild(guild_id) {
+            let channel = guild
+                .channels
+                .values()
+                .filter_map(|channel| match channel {
+                    Channel::Guild(channel) => Some(channel),
+                    _ => None,
+                })
+                .find(|channel| {
+                    channel.name == "announcements" && channel.kind == ChannelType::Text
+                });
 
             if let Some(channel) = channel {
                 info!(

@@ -11,7 +11,7 @@ use serenity::{
 #[command]
 #[bucket("voice")]
 pub async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    let guild_id = match ctx.cache.guild_channel(msg.channel_id).await {
+    let guild_id = match ctx.cache.guild_channel(msg.channel_id) {
         Some(channel) => channel.guild_id,
         None => {
             msg.channel_id
