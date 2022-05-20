@@ -2,6 +2,8 @@ mod commands;
 mod config;
 mod logger;
 
+use self::config::Config;
+use anyhow::Context as _;
 use clokwerk::{
     Interval::{
         Friday,
@@ -16,7 +18,6 @@ use commands::{
     reddit::RedditClient,
     *,
 };
-use config::load_config;
 use log::{
     error,
     info,
@@ -59,7 +60,6 @@ use serenity::{
 use songbird::SerenityInit;
 use std::{
     collections::HashSet,
-    path::Path,
     sync::Arc,
     time::Duration,
 };
@@ -222,34 +222,52 @@ async fn schedule_robotics_reminder(
     });
 }
 
-fn main() {
-    if let Err(e) = logger::setup() {
-        eprintln!("Failed to setup logger: {}", e);
-        return;
-    };
+fn setup() -> anyhow::Result<Config> {
+    self::logger::setup().context("failed to setup logger")?;
 
-    info!("Loading Config.toml...");
     let config_path = "./Config.toml";
-    let config = match load_config(Path::new(config_path)) {
+    info!("loading config.toml...");
+    let config = Config::load(config_path)
+        .with_context(|| format!("failed to load `{}`", config_path))?;
+
+    Ok(config)
+}
+
+fn main() {
+    let config = match setup() {
         Ok(config) => config,
-        Err(e) => {
-            error!("Error loading '{}': {}", config_path, e);
-            return;
+        Err(error) => {
+            eprintln!("{:?}", error);
+            drop(error);
+            std::process::exit(1);
         }
     };
 
+    let code = match real_main(config) {
+        Ok(()) => 0,
+        Err(error) => {
+            error!("{:?}", error);
+            1
+        }
+    };
+
+    std::process::exit(code);
+}
+
+fn real_main(config: Config) -> anyhow::Result<()> {
     info!("Using prefix '{}'", config.prefix);
 
-    let tokio_runtime = match TokioRuntime::new() {
-        Ok(rt) => rt,
-        Err(e) => {
-            error!("Error starting tokio runtime: {}", e);
-            return;
-        }
-    };
+    let tokio_runtime = TokioRuntime::new().context("failed to start tokio runtime")?;
+    tokio_runtime.block_on(async_main(config))?;
 
+    drop(tokio_runtime);
+
+    Ok(())
+}
+
+async fn async_main(config: Config) -> anyhow::Result<()> {
     let twitter_token = egg_mode::auth::Token::Bearer(config.twitter.bearer_token.clone());
-    match tokio_runtime.block_on(egg_mode::auth::verify_tokens(&twitter_token)) {
+    match egg_mode::auth::verify_tokens(&twitter_token).await {
         Ok(user) => {
             info!("Using twitter api from '{}({})'", user.screen_name, user.id);
         }
@@ -259,159 +277,149 @@ fn main() {
         }
     }
 
-    tokio_runtime.block_on(async {
-        // Init Framework
-        let framework = StandardFramework::new()
-            .configure(|c| c.prefix(&config.prefix))
-            .group(&GENERAL_GROUP)
-            .help(&HELP)
-            .on_dispatch_error(|ctx, msg, error, cmd_name| {
-                Box::pin(async move {
-                    match error {
-                        DispatchError::Ratelimited(duration) => {
-                            if let Err(e) = msg
-                                .channel_id
-                                .say(
-                                    &ctx.http,
-                                    format!(
-                                        "Try this again in {} second(s).",
-                                        duration.rate_limit.as_secs_f32()
-                                    ),
-                                )
-                                .await
-                            {
-                                warn!("Failed to send ratelimited warning message: {}", e);
-                            }
-                        }
-                        DispatchError::CommandDisabled => {
-                            if let Err(e) = msg
-                                .channel_id
-                                .say(&ctx.http, format!("Command '{}' disabled.", cmd_name))
-                                .await
-                            {
-                                warn!("Failed to send disabled command warning message: {}", e);
-                            }
-                        }
-                        DispatchError::NotEnoughArguments { min, given } => {
-                            if let Err(e) = msg
-                                .channel_id
-                                .say(
-                                    &ctx.http,
-                                    format!("Need {} arguments but only got {}", min, given),
-                                )
-                                .await
-                            {
-                                warn!("Failed to send not enough args warning message: {}", e);
-                            }
-                        }
-                        DispatchError::TooManyArguments { max, given } => {
-                            if let Err(e) = msg
-                                .channel_id
-                                .say(
-                                    &ctx.http,
-                                    format!("Need only {} arguments but got {}", max, given),
-                                )
-                                .await
-                            {
-                                warn!("Failed to send too many args warning message: {}", e);
-                            }
-                        }
-                        _ => {
-                            warn!("DispatchError: {:?} | {}", error, msg.content);
+    // Init Framework
+    let framework = StandardFramework::new()
+        .configure(|c| c.prefix(&config.prefix))
+        .group(&GENERAL_GROUP)
+        .help(&HELP)
+        .on_dispatch_error(|ctx, msg, error, cmd_name| {
+            Box::pin(async move {
+                match error {
+                    DispatchError::Ratelimited(duration) => {
+                        if let Err(e) = msg
+                            .channel_id
+                            .say(
+                                &ctx.http,
+                                format!(
+                                    "Try this again in {} second(s).",
+                                    duration.rate_limit.as_secs_f32()
+                                ),
+                            )
+                            .await
+                        {
+                            warn!("Failed to send ratelimited warning message: {}", e);
                         }
                     }
-                })
-            })
-            .bucket("simple", |b| b.delay(1))
-            .await
-            .bucket("voice", |b| b.delay(1))
-            .await;
-
-        let mut client = match Client::builder(
-            &config.token,
-            GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT,
-        )
-        .event_handler(Handler)
-        .framework(framework)
-        .register_songbird()
-        .await
-        {
-            Ok(c) => c,
-            Err(e) => {
-                error!("Failed to start client: {}", e);
-                return;
-            }
-        };
-
-        let reddit_client = Arc::from(RedditClient::new());
-
-        {
-            let mut client_data = client.data.write().await;
-
-            client_data.insert::<RedditClientKey>(reddit_client);
-            client_data.insert::<TwitterTokenKey>(Arc::new(twitter_token));
-        }
-
-        // Start Scheduler
-        info!("Starting Event Scheduler...");
-        // TODO: Wrap in arc and rwlock for dynamically adding and removing events?
-        let mut scheduler = Scheduler::new();
-        const AFTER_SCHOOL_ANNOUNCE: &str = "@everyone Robotics Club after school today!";
-        const LUNCH_ANNOUNCE: &str = "@everyone Robotics Club during plus and lunch today!";
-        const NOON: &str = "12:00:00";
-        let scheduler_shutdown_notify = Arc::new(Notify::new());
-
-        schedule_robotics_reminder(&client, &mut scheduler, Monday, NOON, AFTER_SCHOOL_ANNOUNCE)
-            .await;
-        schedule_robotics_reminder(&client, &mut scheduler, Tuesday, NOON, LUNCH_ANNOUNCE).await;
-        schedule_robotics_reminder(&client, &mut scheduler, Thursday, NOON, LUNCH_ANNOUNCE).await;
-        schedule_robotics_reminder(&client, &mut scheduler, Friday, NOON, AFTER_SCHOOL_ANNOUNCE)
-            .await;
-
-        let frequency = Duration::from_secs(60 * 5);
-        let notify = scheduler_shutdown_notify.clone();
-        let handle = tokio::task::spawn(async move {
-            let mut should_exit = false;
-
-            while !should_exit {
-                should_exit = tokio::select! {
-                    _ = tokio::time::sleep(frequency) => false,
-                    _ = notify.notified() => true,
-
-                };
-
-                scheduler.run_pending();
-            }
-        });
-
-        {
-            let shard_manager = client.shard_manager.clone();
-            tokio::spawn(async move {
-                match tokio::signal::ctrl_c().await {
-                    Ok(()) => {
-                        info!("Beginning shutdown...");
-                        shard_manager.lock().await.shutdown_all().await;
+                    DispatchError::CommandDisabled => {
+                        if let Err(e) = msg
+                            .channel_id
+                            .say(&ctx.http, format!("Command '{}' disabled.", cmd_name))
+                            .await
+                        {
+                            warn!("Failed to send disabled command warning message: {}", e);
+                        }
                     }
-                    Err(e) => {
-                        warn!("Failed to register ctrl-c handler: {}", e);
+                    DispatchError::NotEnoughArguments { min, given } => {
+                        if let Err(e) = msg
+                            .channel_id
+                            .say(
+                                &ctx.http,
+                                format!("Need {} arguments but only got {}", min, given),
+                            )
+                            .await
+                        {
+                            warn!("Failed to send not enough args warning message: {}", e);
+                        }
+                    }
+                    DispatchError::TooManyArguments { max, given } => {
+                        if let Err(e) = msg
+                            .channel_id
+                            .say(
+                                &ctx.http,
+                                format!("Need only {} arguments but got {}", max, given),
+                            )
+                            .await
+                        {
+                            warn!("Failed to send too many args warning message: {}", e);
+                        }
+                    }
+                    _ => {
+                        warn!("DispatchError: {:?} | {}", error, msg.content);
                     }
                 }
-            });
-        }
+            })
+        })
+        .bucket("simple", |b| b.delay(1))
+        .await
+        .bucket("voice", |b| b.delay(1))
+        .await;
 
-        info!("Logging in...");
-        if let Err(why) = client.start().await {
-            error!("Error running client: {}", why);
-        }
+    let mut client = Client::builder(
+        &config.token,
+        GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT,
+    )
+    .event_handler(Handler)
+    .framework(framework)
+    .register_songbird()
+    .await
+    .context("failed to build client")?;
 
-        info!("Shutting down...");
-        scheduler_shutdown_notify.notify_one();
-        drop(client); // Hopefully gets rid of all other Arcs...
+    let reddit_client = Arc::from(RedditClient::new());
 
-        if let Err(e) = handle.await {
-            error!("Scheduler Crashed: {}", e);
+    {
+        let mut client_data = client.data.write().await;
+
+        client_data.insert::<RedditClientKey>(reddit_client);
+        client_data.insert::<TwitterTokenKey>(Arc::new(twitter_token));
+    }
+
+    // Start Scheduler
+    info!("Starting Event Scheduler...");
+    // TODO: Wrap in arc and rwlock for dynamically adding and removing events?
+    let mut scheduler = Scheduler::new();
+    const AFTER_SCHOOL_ANNOUNCE: &str = "@everyone Robotics Club after school today!";
+    const LUNCH_ANNOUNCE: &str = "@everyone Robotics Club during plus and lunch today!";
+    const NOON: &str = "12:00:00";
+    let scheduler_shutdown_notify = Arc::new(Notify::new());
+
+    schedule_robotics_reminder(&client, &mut scheduler, Monday, NOON, AFTER_SCHOOL_ANNOUNCE).await;
+    schedule_robotics_reminder(&client, &mut scheduler, Tuesday, NOON, LUNCH_ANNOUNCE).await;
+    schedule_robotics_reminder(&client, &mut scheduler, Thursday, NOON, LUNCH_ANNOUNCE).await;
+    schedule_robotics_reminder(&client, &mut scheduler, Friday, NOON, AFTER_SCHOOL_ANNOUNCE).await;
+
+    let frequency = Duration::from_secs(60 * 5);
+    let notify = scheduler_shutdown_notify.clone();
+    let handle = tokio::task::spawn(async move {
+        let mut should_exit = false;
+
+        while !should_exit {
+            should_exit = tokio::select! {
+                _ = tokio::time::sleep(frequency) => false,
+                _ = notify.notified() => true,
+
+            };
+
+            scheduler.run_pending();
         }
     });
 
-    drop(tokio_runtime);
+    {
+        let shard_manager = client.shard_manager.clone();
+        tokio::spawn(async move {
+            match tokio::signal::ctrl_c().await {
+                Ok(()) => {
+                    info!("Beginning shutdown...");
+                    shard_manager.lock().await.shutdown_all().await;
+                }
+                Err(e) => {
+                    warn!("Failed to register ctrl-c handler: {}", e);
+                }
+            }
+        });
+    }
+
+    info!("Logging in...");
+    if let Err(why) = client.start().await {
+        error!("Error running client: {}", why);
+    }
+
+    info!("Shutting down...");
+    scheduler_shutdown_notify.notify_one();
+    drop(client); // Hopefully gets rid of all other Arcs...
+
+    if let Err(e) = handle.await {
+        error!("Scheduler Crashed: {}", e);
+    }
+
+    Ok(())
 }
