@@ -3,3 +3,5 @@
 token.txt
 Config.toml
 quarky.log
+rpi-deploy.toml
+cross-compile-info.toml

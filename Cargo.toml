@@ -38,3 +38,8 @@ debug-assertions = false
 
 # Updated songbird + support for cross-compiling, like msvc -> mingw
 songbird = { git = "https://github.com/FelixMcFelix/songbird", branch = "symphonia" }
+
+[package.metadata.rpi-deploy]
+targets = [
+    "armv7-unknown-linux-gnueabihf",
+]
