@@ -7,7 +7,7 @@ pub struct CliOptions {
     #[argh(
         option,
         short = 'c',
-        long = "--config",
+        long = "config",
         description = "the path to the config file",
         default = "Utf8PathBuf::from(\"./config.toml\")"
     )]
