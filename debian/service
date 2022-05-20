@@ -1,0 +1,9 @@
+[Unit]
+Description=The quarky discord bot
+
+[Service]
+ExecStart=/usr/bin/quarky --config /etc/quarky/config.toml
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

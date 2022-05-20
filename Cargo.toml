@@ -42,6 +42,22 @@ debug-assertions = false
 # Updated songbird + support for cross-compiling, like msvc -> mingw
 songbird = { git = "https://github.com/FelixMcFelix/songbird", branch = "symphonia" }
 
+[package.metadata.deb]
+name = "quarky"
+depends = ""
+assets = [
+    [ "target/release/quarky", "usr/bin/", "700" ],
+    [ "deb-config.toml", "etc/quarky/config.toml", "600" ],
+]
+conf-files = [
+    "etc/pikadick/config.toml",
+]
+maintainer-scripts = "debian/"
+
+[package.metadata.deb.systemd-units]
+enable = true
+start = true
+
 [package.metadata.rpi-deploy]
 targets = [
     "armv7-unknown-linux-gnueabihf",
