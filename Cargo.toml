@@ -8,7 +8,7 @@ publish = false
 [dependencies]
 clokwerk = "0.3.5"
 chrono = "0.4.19"
-egg-mode = "0.16.0"
+egg-mode = { version = "0.16.0", default-features = false, features = [ "rustls" ] }
 fern = { version = "0.6.1", features = [ "colored" ] }
 http = "0.2.7"
 indexmap = "1.8.1"
