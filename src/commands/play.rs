@@ -1,4 +1,4 @@
-use log::warn;
+use crate::RedditClientKey;
 use serenity::{
     client::Context,
     framework::standard::{
@@ -30,7 +30,7 @@ pub async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
         return Ok(());
     }
 
-    let guild_id = match ctx.cache.guild_channel(msg.channel_id).await {
+    let guild_id = match ctx.cache.guild_channel(msg.channel_id) {
         Some(channel) => channel.guild_id,
         None => {
             msg.channel_id
@@ -40,6 +40,14 @@ pub async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
         }
     };
 
+    let data_lock = ctx.data.read().await;
+    let client = data_lock
+        .get::<RedditClientKey>()
+        .expect("missing reddit client")
+        .client
+        .client
+        .clone();
+    drop(data_lock);
     let manager = songbird::get(ctx)
         .await
         .expect("Songbird Voice client placed in at initialisation.")
@@ -47,17 +55,7 @@ pub async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
 
     if let Some(handler) = manager.get(guild_id) {
         let mut handler = handler.lock().await;
-        let source = match songbird::ytdl(&url).await {
-            Ok(source) => source,
-            Err(why) => {
-                warn!("Could not play audio: {:?}", why);
-                msg.channel_id
-                    .say(&ctx.http, "Error sourcing ffmpeg")
-                    .await?;
-                return Ok(());
-            }
-        };
-
+        let source = songbird::input::Input::from(songbird::input::YoutubeDl::new(client, url));
         handler.play_source(source);
 
         msg.channel_id.say(&ctx.http, "Playing song").await?;

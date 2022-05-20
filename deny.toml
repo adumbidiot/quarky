@@ -45,6 +45,25 @@ skip = [
     
     # Blocked on `enum-primitive` updating `num-traits` to `0.2.x`
     { name = "num-traits", version = "0.1.43" },
+    
+    # Blocked on `reqwest` updating `tokio-util` to `0.7.x`
+    { name = "tokio-util", version = "0.6.10" },
+    
+    # Blocked on `chrono` updating `time` to `0.3.x`
+    { name = "time", version = "0.1.44" },
+    
+    # Blocked on `ring` updating `spin` to `0.9.x`
+    { name = "spin", version = "0.5.2" },
+    
+    # Blocked on `egg-mode` updating `sha-1` to `0.10.x`
+    { name = "sha-1", version = "0.9.8" },
+    
+    # Blocked on `indexmap` updating `hashbrown` to `0.12.x`
+    { name = "hashbrown", version = "0.11.2" },
+    
+    # Blocked on `egg-mode` updating `hmac` and `sha-1`
+    { name = "digest", version = "0.9.0" },
+    { name = "block-buffer", version = "0.9.0" },
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs
@@ -101,6 +120,7 @@ allow-git = [
 	"https://github.com/adumbidiot/zalgo-rs",
 	"https://github.com/adumbidiot/reddit-rs",
     "https://github.com/egg-mode-rs/egg-mode",
-    "https://github.com/adumbidiot/songbird",
-    "https://github.com/serenity-rs/serenity"
+    # "https://github.com/adumbidiot/songbird",
+    "https://github.com/serenity-rs/serenity",
+    "https://github.com/FelixMcFelix/songbird",
 ]

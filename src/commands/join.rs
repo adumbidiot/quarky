@@ -6,16 +6,14 @@ use serenity::{
         Args,
         CommandResult,
     },
-    model::{
-        channel::Message,
-        misc::Mentionable,
-    },
+    model::channel::Message,
+    prelude::Mentionable,
 };
 
 #[command]
 #[bucket("voice")]
 async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    let guild = match msg.guild(&ctx.cache).await {
+    let guild = match msg.guild(&ctx.cache) {
         Some(guild) => guild,
         None => {
             msg.channel_id

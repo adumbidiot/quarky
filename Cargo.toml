@@ -15,7 +15,7 @@ indexmap = "1.7.0"
 lazy_static = "1.4.0"
 log = "0.4.14"
 rand = "0.8.3"
-reddit = { git = "https://github.com/adumbidiot/reddit-rs", rev = "39257920c3a7eaaffc88407f36f498bffc397a5a" }
+reddit = { git = "https://github.com/adumbidiot/reddit-rs" }
 serde = { version = "1.0.126", features = [ "derive" ] }
 serde_json = "1.0.64"
 serenity = { git = "https://github.com/serenity-rs/serenity", branch = "next" }
@@ -23,18 +23,21 @@ songbird = "0.2.0-beta.2"
 thiserror = "1.0.25"
 tokio = { version = "1.7.1", features = [ "rt-multi-thread", "signal" ] }
 toml = "0.5.8"
-zalgo = { git = "https://github.com/adumbidiot/zalgo-rs", rev = "847e0adfc1f1bf6b9a5903b39bf8ca5b9a19c84c" }
+zalgo = { git = "https://github.com/adumbidiot/zalgo-rs" }
 
-# [profile.release]
-# lto = true
-# codegen-units = 1
-# debug = false
-# opt-level = 3
-# debug-assertions = false
+[profile.release]
+lto = "fat"
+codegen-units = 1
+debug = false
+opt-level = 3
+debug-assertions = false
 
 [patch.crates-io]
 # Tokio 1.0 Support
 egg-mode = { git = "https://github.com/egg-mode-rs/egg-mode", rev = "6b81073eba9c3b123ca0e80bdb5ef61d1758f131" }
 
-# Support for cross-compiling, like msvc -> mingw
-songbird = { git = "https://github.com/adumbidiot/songbird", branch = "audiopus-0.3.0" }
+# # Support for cross-compiling, like msvc -> mingw
+# songbird = { git = "https://github.com/adumbidiot/songbird", branch = "audiopus-0.3.0" }
+
+# Updated songbird + support for cross-compiling, like msvc -> mingw
+songbird = { git = "https://github.com/FelixMcFelix/songbird", branch = "symphonia" }
