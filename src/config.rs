@@ -46,7 +46,7 @@ pub struct TwitterConfig {
 #[derive(Deserialize, Debug)]
 pub struct LogConfig {
     /// The log file location
-    #[serde(rename = "log-config", default = "LogConfig::default_log_file")]
+    #[serde(rename = "log-file", default = "LogConfig::default_log_file")]
     pub log_file: Utf8PathBuf,
 }
 
