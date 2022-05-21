@@ -1,18 +1,12 @@
+use crate::Config;
+use anyhow::Context;
 use fern::colors::{
     Color,
     ColoredLevelConfig,
 };
 
-#[derive(Debug, thiserror::Error)]
-pub enum LoggerError {
-    #[error(transparent)]
-    SetLogger(#[from] log::SetLoggerError),
-
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-}
-
-pub fn setup() -> Result<(), LoggerError> {
+/// Setup the logger
+pub fn setup(config: &Config) -> anyhow::Result<()> {
     let colors_line = ColoredLevelConfig::new()
         .error(Color::Red)
         .warn(Color::Yellow)
@@ -38,7 +32,8 @@ pub fn setup() -> Result<(), LoggerError> {
             log::LevelFilter::Error,
         )
         .chain(std::io::stdout())
-        .chain(fern::log_file("quarky.log")?)
-        .apply()?;
+        .chain(fern::log_file(&config.log.log_file)?)
+        .apply()
+        .context("failed to set logger")?;
     Ok(())
 }

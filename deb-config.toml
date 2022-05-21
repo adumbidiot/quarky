@@ -7,3 +7,8 @@ prefix = "~"
 [twitter]
 # Put your bearer token here
 # bearer_token = "[BEARER_TOKEN]"
+
+# The log config
+[log]
+# The log file destination
+log-file = "/var/log/quarky.log"
