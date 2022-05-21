@@ -134,7 +134,7 @@ impl EventHandler for Handler {
             }
         }
 
-        info!("Choosing Game State {}", random_number);
+        info!("choosing game state {}", random_number);
         info!("{} is connected!", ready.user.name);
     }
 
@@ -226,25 +226,18 @@ async fn schedule_robotics_reminder(
 }
 
 fn setup(cli_options: CliOptions) -> anyhow::Result<Config> {
-    self::logger::setup().context("failed to setup logger")?;
-
-    info!("loading config @ `{}`...", cli_options.config);
+    eprintln!("loading config @ `{}`...", cli_options.config);
     let config = Config::load(&cli_options.config)
         .with_context(|| format!("failed to load `{}`", &cli_options.config))?;
+
+    self::logger::setup(&config).context("failed to setup logger")?;
 
     Ok(config)
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let cli_options = argh::from_env();
-    let config = match setup(cli_options) {
-        Ok(config) => config,
-        Err(error) => {
-            eprintln!("{:?}", error);
-            drop(error);
-            std::process::exit(1);
-        }
-    };
+    let config = setup(cli_options)?;
 
     let code = match real_main(config) {
         Ok(()) => 0,
