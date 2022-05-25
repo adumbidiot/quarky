@@ -1,5 +1,7 @@
 [Unit]
 Description=The quarky discord bot
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 ExecStart=/usr/bin/quarky --config /etc/quarky/config.toml
