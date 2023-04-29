@@ -17,7 +17,7 @@ copyleft = "warn"
 confidence-threshold = 0.93
 default = "deny"
 private = { ignore = true }
-allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause", "MPL-2.0" ]
+allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause", "MPL-2.0", "Unicode-DFS-2016" ]
 exceptions = [
     { name = "ring", allow = [ "MIT", "ISC", "OpenSSL" ] },
 ]
@@ -88,9 +88,6 @@ deny = [
     # It's a crate only intended for testing; people insist on using it for some reason.
     # https://crates.io/crates/markup5ever_rcdom/0.1.0
     { name = "markup5ever_rcdom", version = "0.1.0" },
-    
-    # https://github.com/RustSec/advisory-db/issues/867
-    { name = "rusttype", version = "*" },
     
     # https://github.com/RustSec/advisory-db/issues/826
     { name = "totally-safe-transmute", version = "*" },

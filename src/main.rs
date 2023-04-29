@@ -13,6 +13,7 @@ use self::{
     config::Config,
 };
 use anyhow::Context as _;
+ use clokwerk::Job;
 use clokwerk::{
     Interval::{
         Friday,
