@@ -114,12 +114,6 @@ impl TypeMapKey for RedditClientKey {
     type Value = Arc<RedditClient>;
 }
 
-pub struct TwitterTokenKey;
-
-impl TypeMapKey for TwitterTokenKey {
-    type Value = Arc<egg_mode::auth::Token>;
-}
-
 struct Handler;
 
 #[serenity::async_trait]
@@ -197,21 +191,16 @@ async fn schedule_robotics_reminder(
     time: &str,
     msg: &str,
 ) {
-    let data_lock = client.data.read().await;
-    let token = data_lock.get::<TwitterTokenKey>().unwrap().clone();
-    drop(data_lock);
-
     let msg = msg.to_string();
     let http = client.cache_and_http.http.clone();
     let cache = client.cache_and_http.cache.clone();
 
     scheduler.every(day).at(time).run(move || {
-        let token = token.clone();
         let msg = msg.clone();
         let http = http.clone();
         let cache = cache.clone();
         tokio::spawn(async move {
-            let msg = match crate::random_tweet::get_random_tweet_url(&token, "dog_rates")
+            let msg = match crate::random_tweet::get_random_tweet_url("dog_rates")
                 .await
                 .map_err(|error| error!("{error}"))
                 .ok()
@@ -251,17 +240,6 @@ fn main() -> anyhow::Result<()> {
 }
 
 async fn async_main(config: Config) -> anyhow::Result<()> {
-    let twitter_token = egg_mode::auth::Token::Bearer(config.twitter.bearer_token.clone());
-    match egg_mode::auth::verify_tokens(&twitter_token).await {
-        Ok(user) => {
-            info!("Using twitter api from '{}({})'", user.screen_name, user.id);
-        }
-        Err(e) => {
-            // This might only be for api key/secret? warn only for now
-            warn!("Invalid Twitter Token: {e}");
-        }
-    }
-
     // Init Framework
     let framework = StandardFramework::new()
         .configure(|c| c.prefix(&config.prefix))
@@ -345,7 +323,6 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
         let mut client_data = client.data.write().await;
 
         client_data.insert::<RedditClientKey>(reddit_client);
-        client_data.insert::<TwitterTokenKey>(Arc::new(twitter_token));
     }
 
     // Start Scheduler

@@ -11,7 +11,6 @@ camino = { version = "1.1.4", features = [ "serde1" ] }
 # clokwerk = "0.4.0"
 clokwerk = { git = "https://github.com/mdsherry/clokwerk" }
 chrono = { version = "0.4.24", default-features = false }
-egg-mode = { version = "0.16.1", default-features = false, features = [ "rustls" ] }
 fern = { version = "0.6.2", features = [ "colored" ] }
 http = "0.2.9"
 indexmap = "1.9.3"
@@ -28,6 +27,7 @@ tokio = { version = "1.28.0", features = [ "rt-multi-thread", "signal" ] }
 toml = "0.7.3"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs" }
 argh = "0.1.10"
+twitter-scraper = { path = "lib/twitter-scraper", default-features = false, features = [ "rustls-tls" ] }
 
 [profile.release]
 lto = "fat"
@@ -38,6 +38,11 @@ debug-assertions = false
 strip = "symbols"
 
 [patch.crates-io]
+
+[workspace]
+members = [
+    "lib/*"
+]
 
 [package.metadata.deb]
 name = "quarky"

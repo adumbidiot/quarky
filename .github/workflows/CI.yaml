@@ -32,10 +32,10 @@ jobs:
           components: clippy, rustfmt
         
       - name: Check Fmt
-        run: cargo fmt -- --check --color always
+        run: cargo fmt --all -- --check --color always
         
       - name: Check Clippy
-        run: cargo clippy --tests -- -D warnings
+        run: cargo clippy --tests --all -- -D warnings
         
   deny:
     name: Deny
@@ -69,7 +69,7 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
       
       - name: Build
-        run: cargo build --verbose
+        run: cargo build --all --verbose
         
       - name: Tests
         run: cargo test --all --verbose
