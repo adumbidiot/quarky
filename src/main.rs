@@ -239,23 +239,10 @@ fn main() -> anyhow::Result<()> {
     let cli_options = argh::from_env();
     let config = setup(cli_options)?;
 
-    let code = match real_main(config) {
-        Ok(()) => 0,
-        Err(error) => {
-            error!("{:?}", error);
-            1
-        }
-    };
-
-    std::process::exit(code);
-}
-
-fn real_main(config: Config) -> anyhow::Result<()> {
     info!("Using prefix '{}'", config.prefix);
 
     let tokio_runtime = TokioRuntime::new().context("failed to start tokio runtime")?;
     tokio_runtime.block_on(async_main(config))?;
-
     drop(tokio_runtime);
 
     Ok(())
