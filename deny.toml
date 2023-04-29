@@ -85,6 +85,10 @@ skip = [
     
     # Blocked on multiple crates updating base64
     { name = "base64", version = "0.13.1" },
+    
+    # Blocked on reqwest updating cookie_store
+    { name = "idna", version = "0.2.3" },
+    { name = "cookie_store", version = "0.16.1" },
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs
