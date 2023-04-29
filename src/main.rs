@@ -269,7 +269,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
         }
         Err(e) => {
             // This might only be for api key/secret? warn only for now
-            warn!("Invalid Twitter Token: {}", e);
+            warn!("Invalid Twitter Token: {e}");
         }
     }
 
