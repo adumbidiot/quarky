@@ -17,6 +17,8 @@ jobs:
         
       - name: Install Toolchain
         uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: clippy, rustfmt
         
       - name: Check Fmt
         run: cargo fmt -- --check --color always
