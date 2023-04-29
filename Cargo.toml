@@ -20,8 +20,8 @@ rand = "0.8.5"
 reddit = { git = "https://github.com/adumbidiot/reddit-rs" }
 serde = { version = "1.0.137", features = [ "derive" ] }
 serde_json = "1.0.81"
-serenity = { git = "https://github.com/serenity-rs/serenity", branch = "next" }
-songbird = "0.2.2"
+serenity = { version = "0.11" }
+songbird = "0.3.0"
 thiserror = "1.0.31"
 tokio = { version = "1.18.2", features = [ "rt-multi-thread", "signal" ] }
 toml = "0.5.9"
@@ -34,13 +34,9 @@ codegen-units = 1
 debug = false
 opt-level = 3
 debug-assertions = false
+strip = "symbols"
 
 [patch.crates-io]
-# # Support for cross-compiling, like msvc -> mingw
-# songbird = { git = "https://github.com/adumbidiot/songbird", branch = "audiopus-0.3.0" }
-
-# Updated songbird + support for cross-compiling, like msvc -> mingw
-songbird = { git = "https://github.com/FelixMcFelix/songbird", branch = "symphonia" }
 
 [package.metadata.deb]
 name = "quarky"

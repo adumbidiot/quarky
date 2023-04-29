@@ -16,8 +16,7 @@ pub async fn invite(ctx: &Context, msg: &Message, _args: Args) -> CommandResult 
     let id = app_info.id;
     let permissions = "1341644225";
     let link = format!(
-        "https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions={}",
-        id, permissions
+        "https://discordapp.com/oauth2/authorize?client_id={id}&scope=bot&permissions={permissions}",
     );
     msg.channel_id.say(&ctx.http, &link).await?;
     Ok(())

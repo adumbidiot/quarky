@@ -169,7 +169,7 @@ async fn reddit(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         }
         Err(e) => {
             msg.channel_id
-                .say(&ctx.http, format!("Failed fetching posts: {}", e))
+                .say(&ctx.http, format!("Failed fetching posts: {e}"))
                 .await?;
         }
     }

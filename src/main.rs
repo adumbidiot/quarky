@@ -215,7 +215,7 @@ async fn schedule_robotics_reminder(
                 .ok()
                 .flatten()
             {
-                Some(link) => format!("{}\n{}", msg, link),
+                Some(link) => format!("{msg}\n{link}"),
                 None => msg,
             };
 
@@ -299,7 +299,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                     DispatchError::CommandDisabled => {
                         if let Err(e) = msg
                             .channel_id
-                            .say(&ctx.http, format!("Command '{}' disabled.", cmd_name))
+                            .say(&ctx.http, format!("Command '{cmd_name}' disabled."))
                             .await
                         {
                             warn!("Failed to send disabled command warning message: {}", e);
@@ -310,7 +310,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                             .channel_id
                             .say(
                                 &ctx.http,
-                                format!("Need {} arguments but only got {}", min, given),
+                                format!("Need {min} arguments but only got {given}"),
                             )
                             .await
                         {
@@ -322,7 +322,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                             .channel_id
                             .say(
                                 &ctx.http,
-                                format!("Need only {} arguments but got {}", max, given),
+                                format!("Need only {max} arguments but got {given}"),
                             )
                             .await
                         {

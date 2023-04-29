@@ -45,15 +45,15 @@ pub async fn random_tweet(ctx: &Context, msg: &Message, mut args: Args) -> Comma
         Ok(None) => {
             warn!("No tweets retrieved for '{}'", user);
             msg.channel_id
-                .say(&ctx.http, format!("No tweets retrieved for {}", user))
+                .say(&ctx.http, format!("No tweets retrieved for {user}"))
                 .await?;
             return Ok(());
         }
         Err(e) => {
             msg.channel_id
-                .say(&ctx.http, format!("Twitter Api Error: {}", e))
+                .say(&ctx.http, format!("Twitter Api Error: {e}"))
                 .await?;
-            warn!("Failed to get random tweet for {}: {}", user, e);
+            warn!("Failed to get random tweet for {user}: {e}");
             return Ok(());
         }
     }
