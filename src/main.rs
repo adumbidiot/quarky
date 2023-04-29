@@ -212,6 +212,7 @@ async fn schedule_robotics_reminder(
         tokio::spawn(async move {
             let msg = match crate::random_tweet::get_random_tweet_url(&token, "dog_rates")
                 .await
+                .map_err(|error| error!("{error}"))
                 .ok()
                 .flatten()
             {
@@ -401,7 +402,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
     drop(client); // Hopefully gets rid of all other Arcs...
 
     if let Err(e) = handle.await {
-        error!("Scheduler Crashed: {}", e);
+        error!("Scheduler Crashed: {e}");
     }
 
     Ok(())
