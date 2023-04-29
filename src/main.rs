@@ -114,12 +114,6 @@ impl TypeMapKey for RedditClientKey {
     type Value = Arc<RedditClient>;
 }
 
-pub struct TwitterTokenKey;
-
-impl TypeMapKey for TwitterTokenKey {
-    type Value = Arc<egg_mode::auth::Token>;
-}
-
 struct Handler;
 
 #[serenity::async_trait]
@@ -246,17 +240,6 @@ fn main() -> anyhow::Result<()> {
 }
 
 async fn async_main(config: Config) -> anyhow::Result<()> {
-    let twitter_token = egg_mode::auth::Token::Bearer(config.twitter.bearer_token.clone());
-    match egg_mode::auth::verify_tokens(&twitter_token).await {
-        Ok(user) => {
-            info!("Using twitter api from '{}({})'", user.screen_name, user.id);
-        }
-        Err(e) => {
-            // This might only be for api key/secret? warn only for now
-            warn!("Invalid Twitter Token: {e}");
-        }
-    }
-
     // Init Framework
     let framework = StandardFramework::new()
         .configure(|c| c.prefix(&config.prefix))
@@ -340,7 +323,6 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
         let mut client_data = client.data.write().await;
 
         client_data.insert::<RedditClientKey>(reddit_client);
-        client_data.insert::<TwitterTokenKey>(Arc::new(twitter_token));
     }
 
     // Start Scheduler

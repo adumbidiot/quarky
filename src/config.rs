@@ -14,9 +14,6 @@ pub struct Config {
     /// The bot token
     pub token: String,
 
-    /// The twitter config
-    pub twitter: TwitterConfig,
-
     /// The log config
     #[serde(default)]
     pub log: LogConfig,
@@ -34,13 +31,6 @@ impl Config {
         // TODO: Validate token
         Ok(config)
     }
-}
-
-/// The twitter config
-#[derive(Deserialize, Debug)]
-pub struct TwitterConfig {
-    /// The twitter token
-    pub bearer_token: String,
 }
 
 /// The log config
