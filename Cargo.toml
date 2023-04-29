@@ -6,27 +6,28 @@ edition = "2021"
 publish = false
 
 [dependencies]
-anyhow = "1.0.57"
-camino = { version = "1.0.9", features = [ "serde1" ] }
-clokwerk = "0.3.5"
-chrono = "0.4.19"
-egg-mode = { version = "0.16.0", default-features = false, features = [ "rustls" ] }
-fern = { version = "0.6.1", features = [ "colored" ] }
-http = "0.2.7"
-indexmap = "1.8.2"
+anyhow = "1.0.70"
+camino = { version = "1.1.4", features = [ "serde1" ] }
+# clokwerk = "0.4.0"
+clokwerk = { git = "https://github.com/mdsherry/clokwerk" }
+chrono = { version = "0.4.24", default-features = false }
+egg-mode = { version = "0.16.1", default-features = false, features = [ "rustls" ] }
+fern = { version = "0.6.2", features = [ "colored" ] }
+http = "0.2.9"
+indexmap = "1.9.3"
 lazy_static = "1.4.0"
 log = "0.4.17"
 rand = "0.8.5"
-reddit = { git = "https://github.com/adumbidiot/reddit-rs" }
-serde = { version = "1.0.137", features = [ "derive" ] }
-serde_json = "1.0.81"
-serenity = { git = "https://github.com/serenity-rs/serenity", branch = "next" }
-songbird = "0.2.2"
-thiserror = "1.0.31"
-tokio = { version = "1.18.2", features = [ "rt-multi-thread", "signal" ] }
-toml = "0.5.9"
+reddit = { git = "https://github.com/adumbidiot/reddit-rs", default-features = false, features = [ "rustls-tls" ] }
+serde = { version = "1.0.160", features = [ "derive" ] }
+serde_json = "1.0.96"
+serenity = "0.11.5"
+songbird = "0.3.2"
+thiserror = "1.0.40"
+tokio = { version = "1.28.0", features = [ "rt-multi-thread", "signal" ] }
+toml = "0.7.3"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs" }
-argh = "0.1.7"
+argh = "0.1.10"
 
 [profile.release]
 lto = "fat"
@@ -34,13 +35,9 @@ codegen-units = 1
 debug = false
 opt-level = 3
 debug-assertions = false
+strip = "symbols"
 
 [patch.crates-io]
-# # Support for cross-compiling, like msvc -> mingw
-# songbird = { git = "https://github.com/adumbidiot/songbird", branch = "audiopus-0.3.0" }
-
-# Updated songbird + support for cross-compiling, like msvc -> mingw
-songbird = { git = "https://github.com/FelixMcFelix/songbird", branch = "symphonia" }
 
 [package.metadata.deb]
 name = "quarky"

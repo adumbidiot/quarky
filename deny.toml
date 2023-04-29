@@ -9,7 +9,13 @@ targets = [
 vulnerability = "deny"
 unmaintained = "deny"
 notice = "deny"
-ignore = []
+ignore = [
+    # TODO: Remove Fern
+    "RUSTSEC-2021-0145",
+    
+    # TODO: Remove Egg-mode
+    "RUSTSEC-2020-0071",
+]
 
 [licenses]
 unlicensed = "deny"
@@ -17,7 +23,7 @@ copyleft = "warn"
 confidence-threshold = 0.93
 default = "deny"
 private = { ignore = true }
-allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause", "MPL-2.0" ]
+allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause", "MPL-2.0", "Unicode-DFS-2016" ]
 exceptions = [
     { name = "ring", allow = [ "MIT", "ISC", "OpenSSL" ] },
 ]
@@ -46,9 +52,6 @@ skip = [
     # Blocked on `enum-primitive` updating `num-traits` to `0.2.x`
     { name = "num-traits", version = "0.1.43" },
     
-    # Blocked on `reqwest` updating `tokio-util` to `0.7.x`
-    { name = "tokio-util", version = "0.6.10" },
-    
     # Blocked on `chrono` updating `time` to `0.3.x`
     { name = "time", version = "0.1.44" },
     
@@ -57,9 +60,6 @@ skip = [
     
     # Blocked on `egg-mode` updating `sha-1` to `0.10.x`
     { name = "sha-1", version = "0.9.8" },
-    
-    # Blocked on `indexmap` updating `hashbrown` to `0.12.x`
-    { name = "hashbrown", version = "0.11.2" },
     
     # Blocked on `egg-mode` updating `hmac` and `sha-1`
     { name = "digest", version = "0.9.0" },
@@ -71,6 +71,20 @@ skip = [
     { name = "tokio-rustls", version = "0.22.0" },
     { name = "sct", version = "0.6.1" },
     { name = "rustls", version = "0.19.1" },
+    
+    # Blocked on the ecosystem moving to windows 0.48
+    { name = "windows-targets", version = "0.42.2" },
+    { name = "windows_x86_64_msvc", version = "0.42.2" },
+    { name = "windows-sys", version = "0.45.0" },
+    
+    # Blocked on removing egg-mode
+    { name = "windows-sys", version = "0.42.0" },
+    
+    # Blocked on serenity updating "syn"
+    { name = "syn", version = "1.0.109" },
+    
+    # Blocked on multiple crates updating base64
+    { name = "base64", version = "0.13.1" },
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs
@@ -88,9 +102,6 @@ deny = [
     # It's a crate only intended for testing; people insist on using it for some reason.
     # https://crates.io/crates/markup5ever_rcdom/0.1.0
     { name = "markup5ever_rcdom", version = "0.1.0" },
-    
-    # https://github.com/RustSec/advisory-db/issues/867
-    { name = "rusttype", version = "*" },
     
     # https://github.com/RustSec/advisory-db/issues/826
     { name = "totally-safe-transmute", version = "*" },
@@ -124,9 +135,10 @@ deny = [
 unknown-registry = "warn"
 unknown-git = "deny"
 allow-git = [
-	"https://github.com/adumbidiot/zalgo-rs",
-	"https://github.com/adumbidiot/reddit-rs",
-    # "https://github.com/adumbidiot/songbird",
-    "https://github.com/serenity-rs/serenity",
-    "https://github.com/FelixMcFelix/songbird",
+    "https://github.com/mdsherry/clokwerk",
+]
+
+[sources.allow-org]
+github = [
+    "adumbidiot",
 ]

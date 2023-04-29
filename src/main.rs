@@ -20,6 +20,7 @@ use clokwerk::{
         Thursday,
         Tuesday,
     },
+    Job,
     Scheduler,
 };
 use log::{
@@ -212,10 +213,11 @@ async fn schedule_robotics_reminder(
         tokio::spawn(async move {
             let msg = match crate::random_tweet::get_random_tweet_url(&token, "dog_rates")
                 .await
+                .map_err(|error| error!("{error}"))
                 .ok()
                 .flatten()
             {
-                Some(link) => format!("{}\n{}", msg, link),
+                Some(link) => format!("{msg}\n{link}"),
                 None => msg,
             };
 
@@ -239,23 +241,10 @@ fn main() -> anyhow::Result<()> {
     let cli_options = argh::from_env();
     let config = setup(cli_options)?;
 
-    let code = match real_main(config) {
-        Ok(()) => 0,
-        Err(error) => {
-            error!("{:?}", error);
-            1
-        }
-    };
-
-    std::process::exit(code);
-}
-
-fn real_main(config: Config) -> anyhow::Result<()> {
     info!("Using prefix '{}'", config.prefix);
 
     let tokio_runtime = TokioRuntime::new().context("failed to start tokio runtime")?;
     tokio_runtime.block_on(async_main(config))?;
-
     drop(tokio_runtime);
 
     Ok(())
@@ -269,7 +258,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
         }
         Err(e) => {
             // This might only be for api key/secret? warn only for now
-            warn!("Invalid Twitter Token: {}", e);
+            warn!("Invalid Twitter Token: {e}");
         }
     }
 
@@ -299,7 +288,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                     DispatchError::CommandDisabled => {
                         if let Err(e) = msg
                             .channel_id
-                            .say(&ctx.http, format!("Command '{}' disabled.", cmd_name))
+                            .say(&ctx.http, format!("Command '{cmd_name}' disabled."))
                             .await
                         {
                             warn!("Failed to send disabled command warning message: {}", e);
@@ -310,7 +299,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                             .channel_id
                             .say(
                                 &ctx.http,
-                                format!("Need {} arguments but only got {}", min, given),
+                                format!("Need {min} arguments but only got {given}"),
                             )
                             .await
                         {
@@ -322,7 +311,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                             .channel_id
                             .say(
                                 &ctx.http,
-                                format!("Need only {} arguments but got {}", max, given),
+                                format!("Need only {max} arguments but got {given}"),
                             )
                             .await
                         {
@@ -414,7 +403,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
     drop(client); // Hopefully gets rid of all other Arcs...
 
     if let Err(e) = handle.await {
-        error!("Scheduler Crashed: {}", e);
+        error!("Scheduler Crashed: {e}");
     }
 
     Ok(())

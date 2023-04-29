@@ -7,10 +7,7 @@ use serenity::{
     },
     model::channel::Message,
 };
-use zalgo::{
-    RandOrStatic,
-    Zalgoifier,
-};
+use zalgo::ZalgoBuilder;
 
 #[command]
 #[description("Zalgoify a phrase")]
@@ -37,13 +34,11 @@ pub async fn zalgo(ctx: &Context, msg: &Message, mut args: Args) -> CommandResul
         return Ok(());
     }
 
-    let output = {
-        let mut zalgoifier = Zalgoifier::new();
-        zalgoifier.set_up(RandOrStatic::Static(max));
-        zalgoifier.set_down(RandOrStatic::Static(max));
-        zalgoifier.set_mid(RandOrStatic::Static(max));
-        zalgoifier.zalgoify(&input)
-    };
+    let output = ZalgoBuilder::new()
+        .set_up(max)
+        .set_down(max)
+        .set_mid(max)
+        .zalgoify(&input);
 
     let _ = msg.channel_id.say(&ctx.http, &output).await?;
 

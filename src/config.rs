@@ -18,6 +18,7 @@ pub struct Config {
     pub twitter: TwitterConfig,
 
     /// The log config
+    #[serde(default)]
     pub log: LogConfig,
 }
 
@@ -54,5 +55,13 @@ impl LogConfig {
     /// Get the default value of the `log_file` field
     fn default_log_file() -> Utf8PathBuf {
         Utf8PathBuf::from("quarky.log")
+    }
+}
+
+impl Default for LogConfig {
+    fn default() -> Self {
+        Self {
+            log_file: Self::default_log_file(),
+        }
     }
 }
