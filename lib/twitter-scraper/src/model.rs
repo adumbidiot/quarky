@@ -3,7 +3,10 @@ mod get_user_tweets;
 
 pub use self::{
     get_user_by_screen_name::GetUserByScreenNameResponse,
-    get_user_tweets::GetUserTweetsResponse,
+    get_user_tweets::{
+        GetUserTweetsResponse,
+        TimelineInstruction as GetUserTweetsResponseTimelineInstruction,
+    },
 };
 
 /// A graph ql response

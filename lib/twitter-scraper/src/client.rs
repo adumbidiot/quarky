@@ -146,12 +146,13 @@ impl Client {
     pub async fn get_user_tweets(
         &self,
         user_id: &str,
+        count: Option<usize>,
     ) -> Result<GraphQlResponse<GetUserTweetsResponse>, Error> {
         const QUERY_HASH: &str = "CdG2Vuc1v6F5JyEngGpxVw";
 
         let variables = json!({
-            "userId":user_id,
-            "count": 40,
+            "userId": user_id,
+            "count": count.unwrap_or(40),
             "includePromotedContent": true,
             "withQuickPromoteEligibilityTweetFields": true,
             "withVoice": true,

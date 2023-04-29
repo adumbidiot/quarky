@@ -6,6 +6,7 @@ pub use crate::{
     model::{
         GetUserByScreenNameResponse,
         GetUserTweetsResponse,
+        GetUserTweetsResponseTimelineInstruction,
         GraphQlResponse,
     },
 };
@@ -54,7 +55,7 @@ mod test {
             .expect("failed to get user by screen name");
 
         let user_tweets = client
-            .get_user_tweets(user.data.user.result.rest_id.as_str())
+            .get_user_tweets(user.data.user.result.rest_id.as_str(), Some(200))
             .await
             .expect("failed to get user tweets");
         dbg!(user_tweets.data);

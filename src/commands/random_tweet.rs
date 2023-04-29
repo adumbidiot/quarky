@@ -1,4 +1,4 @@
-use crate::TwitterTokenKey;
+use anyhow::Context as _;
 use log::warn;
 use rand::{
     prelude::SliceRandom,
@@ -14,17 +14,46 @@ use serenity::{
     model::channel::Message,
 };
 
-pub async fn get_random_tweet_url(
-    twitter_token: &egg_mode::auth::Token,
-    user: &str,
-) -> Result<Option<String>, egg_mode::error::Error> {
-    let timeline = egg_mode::tweet::user_timeline(user.to_string(), false, false, twitter_token);
+pub async fn get_random_tweet_url(user: &str) -> anyhow::Result<Option<String>> {
+    // TODO: Cache?
+    let client = twitter_scraper::Client::new();
+    client
+        .init_session()
+        .await
+        .context("failed to init session")?;
+    let user_response = client
+        .get_user_by_screen_name(user)
+        .await
+        .context("failed to get user by screen name")?;
 
-    let (_timeline, feed) = timeline.with_page_size(200).start().await?;
+    let user_tweets = client
+        .get_user_tweets(user_response.data.user.result.rest_id.as_str(), Some(200))
+        .await
+        .context("failed to get user tweets")?;
 
-    Ok(feed
+    let entries = user_tweets
+        .data
+        .user
+        .result
+        .timeline_v2
+        .timeline
+        .instructions
+        .iter()
+        .find_map(|instruction| match instruction {
+            twitter_scraper::GetUserTweetsResponseTimelineInstruction::AddEntries { entries } => {
+                Some(entries)
+            }
+            _ => None,
+        })
+        .context("missing AddEntries instruction")?;
+    let entries: Vec<_> = entries
+        .iter()
+        .filter_map(|entry| entry.entry_id.strip_prefix("tweet-"))
+        .collect();
+
+    Ok(entries
         .choose(&mut OsRng)
-        .map(|tweet| format!("https://twitter.com/{}/status/{}", user, tweet.id)))
+        .map(|tweet_id| format!("https://twitter.com/{user}/status/{tweet_id}")))
 }
 
 #[command("random-tweet")]
@@ -34,11 +63,7 @@ pub async fn get_random_tweet_url(
 pub async fn random_tweet(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let user = args.single::<String>().unwrap();
 
-    let data_lock = ctx.data.read().await;
-    let token = data_lock.get::<TwitterTokenKey>().unwrap().clone();
-    drop(data_lock);
-
-    match get_random_tweet_url(&token, &user).await {
+    match get_random_tweet_url(&user).await {
         Ok(Some(url)) => {
             msg.channel_id.say(&ctx.http, url).await?;
         }

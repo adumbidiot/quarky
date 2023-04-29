@@ -197,21 +197,16 @@ async fn schedule_robotics_reminder(
     time: &str,
     msg: &str,
 ) {
-    let data_lock = client.data.read().await;
-    let token = data_lock.get::<TwitterTokenKey>().unwrap().clone();
-    drop(data_lock);
-
     let msg = msg.to_string();
     let http = client.cache_and_http.http.clone();
     let cache = client.cache_and_http.cache.clone();
 
     scheduler.every(day).at(time).run(move || {
-        let token = token.clone();
         let msg = msg.clone();
         let http = http.clone();
         let cache = cache.clone();
         tokio::spawn(async move {
-            let msg = match crate::random_tweet::get_random_tweet_url(&token, "dog_rates")
+            let msg = match crate::random_tweet::get_random_tweet_url("dog_rates")
                 .await
                 .map_err(|error| error!("{error}"))
                 .ok()
