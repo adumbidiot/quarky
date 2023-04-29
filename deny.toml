@@ -9,7 +9,10 @@ targets = [
 vulnerability = "deny"
 unmaintained = "deny"
 notice = "deny"
-ignore = []
+ignore = [
+    # TODO: Remove Fern
+    "RUSTSEC-2021-0145",
+]
 
 [licenses]
 unlicensed = "deny"

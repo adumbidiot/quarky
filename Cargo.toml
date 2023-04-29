@@ -8,7 +8,8 @@ publish = false
 [dependencies]
 anyhow = "1.0.70"
 camino = { version = "1.1.4", features = [ "serde1" ] }
-clokwerk = "0.4.0"
+# clokwerk = "0.4.0"
+clokwerk = { git = "https://github.com/mdsherry/clokwerk" }
 chrono = "0.4.24"
 egg-mode = { version = "0.16.1", default-features = false, features = [ "rustls" ] }
 fern = { version = "0.6.2", features = [ "colored" ] }
@@ -17,7 +18,7 @@ indexmap = "1.9.3"
 lazy_static = "1.4.0"
 log = "0.4.17"
 rand = "0.8.5"
-reddit = { git = "https://github.com/adumbidiot/reddit-rs" }
+reddit = { git = "https://github.com/adumbidiot/reddit-rs", default-features = false, features = [ "rustls-tls" ] }
 serde = { version = "1.0.160", features = [ "derive" ] }
 serde_json = "1.0.96"
 serenity = "0.11.5"
