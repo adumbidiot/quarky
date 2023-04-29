@@ -28,6 +28,7 @@ tokio = { version = "1.28.0", features = [ "rt-multi-thread", "signal" ] }
 toml = "0.7.3"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs" }
 argh = "0.1.10"
+twitter-scraper = { path = "lib/twitter-scraper" }
 
 [profile.release]
 lto = "fat"
@@ -38,6 +39,11 @@ debug-assertions = false
 strip = "symbols"
 
 [patch.crates-io]
+
+[workspace]
+members = [
+    "lib/*"
+]
 
 [package.metadata.deb]
 name = "quarky"

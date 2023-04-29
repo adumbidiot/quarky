@@ -1,0 +1,44 @@
+/// The response for a GetUserTweets command
+#[derive(Debug, serde::Deserialize)]
+pub struct GetUserTweetsResponse {
+    pub user: User,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct User {
+    pub result: UserResult,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct UserResult {
+    pub timeline_v2: TimelineV2,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct TimelineV2 {
+    pub timeline: Timeline,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct Timeline {
+    pub instructions: Vec<TimelineInstruction>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+#[serde(tag = "type")]
+pub enum TimelineInstruction {
+    #[serde(rename = "TimelineClearCache")]
+    ClearCache,
+
+    #[serde(rename = "TimelineAddEntries")]
+    AddEntries { entries: Vec<TimelineEntry> },
+
+    #[serde(rename = "TimelinePinEntry")]
+    PinEntry,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct TimelineEntry {
+    #[serde(rename = "entryId")]
+    pub entry_id: String,
+}
