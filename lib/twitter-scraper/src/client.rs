@@ -147,13 +147,14 @@ impl Client {
         &self,
         user_id: &str,
         count: Option<usize>,
+        include_promoted_content: Option<bool>,
     ) -> Result<GraphQlResponse<GetUserTweetsResponse>, Error> {
         const QUERY_HASH: &str = "CdG2Vuc1v6F5JyEngGpxVw";
 
         let variables = json!({
             "userId": user_id,
             "count": count.unwrap_or(40),
-            "includePromotedContent": true,
+            "includePromotedContent": include_promoted_content.unwrap_or(true),
             "withQuickPromoteEligibilityTweetFields": true,
             "withVoice": true,
             "withV2Timeline": true,
@@ -181,6 +182,49 @@ impl Client {
         });
 
         self.make_graphql_request("UserTweets", QUERY_HASH, &variables, &features)
+            .await
+    }
+
+    /// Get user media
+    pub async fn get_user_media(
+        &self,
+        user_id: &str,
+        count: Option<usize>,
+    ) -> Result<GraphQlResponse<GetUserTweetsResponse>, Error> {
+        const QUERY_HASH: &str = "P7qs2Sf7vu1LDKbzDW9FSA";
+
+        let variables = json!({
+            "userId": user_id,
+            "count": count.unwrap_or(40),
+            "includePromotedContent": false,
+            "withClientEventToken": false,
+            "withBirdwatchNotes": false,
+            "withVoice": true,
+            "withV2Timeline": true
+        });
+        let features = json!({
+            "blue_business_profile_image_shape_enabled": true,
+            "responsive_web_graphql_exclude_directive_enabled": true,
+            "verified_phone_label_enabled": false,
+            "responsive_web_graphql_timeline_navigation_enabled": true,
+            "responsive_web_graphql_skip_user_profile_image_extensions_enabled": false,
+            "tweetypie_unmention_optimization_enabled": true,
+            "vibe_api_enabled": true,
+            "responsive_web_edit_tweet_api_enabled": true,
+            "graphql_is_translatable_rweb_tweet_is_translatable_enabled": true,
+            "view_counts_everywhere_api_enabled": true,
+            "longform_notetweets_consumption_enabled": true,
+            "tweet_awards_web_tipping_enabled": false,
+            "freedom_of_speech_not_reach_fetch_enabled": true,
+            "standardized_nudges_misinfo": true,
+            "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": false,
+            "interactive_text_enabled": true,
+            "responsive_web_text_conversations_enabled": false,
+            "longform_notetweets_rich_text_read_enabled": true,
+            "responsive_web_enhance_cards_enabled": false,
+        });
+
+        self.make_graphql_request("UserMedia", QUERY_HASH, &variables, &features)
             .await
     }
 }

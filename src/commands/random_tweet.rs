@@ -1,5 +1,8 @@
 use anyhow::Context as _;
-use log::warn;
+use log::{
+    info,
+    warn,
+};
 use rand::{
     prelude::SliceRandom,
     rngs::OsRng,
@@ -25,18 +28,17 @@ pub async fn get_random_tweet_url(user: &str) -> anyhow::Result<Option<String>> 
         .get_user_by_screen_name(user)
         .await
         .context("failed to get user by screen name")?;
+    let user_id = user_response.data.user.result.rest_id.as_str();
+
+    info!("Twitter user id for \"{user}\" is \"{user_id}\"");
 
     let user_tweets = client
-        .get_user_tweets(user_response.data.user.result.rest_id.as_str(), Some(200))
+        .get_user_media(user_id, Some(200))
         .await
         .context("failed to get user tweets")?;
+    let timeline = user_tweets.data.user.result.timeline_v2.timeline;
 
-    let entries = user_tweets
-        .data
-        .user
-        .result
-        .timeline_v2
-        .timeline
+    let entries = timeline
         .instructions
         .iter()
         .find_map(|instruction| match instruction {
@@ -45,7 +47,7 @@ pub async fn get_random_tweet_url(user: &str) -> anyhow::Result<Option<String>> 
             }
             _ => None,
         })
-        .context("missing AddEntries instruction")?;
+        .context("missing AddEntries instruction in timeline")?;
     let entries: Vec<_> = entries
         .iter()
         .filter_map(|entry| entry.entry_id.strip_prefix("tweet-"))

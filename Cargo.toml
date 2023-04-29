@@ -27,7 +27,7 @@ tokio = { version = "1.28.0", features = [ "rt-multi-thread", "signal" ] }
 toml = "0.7.3"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs" }
 argh = "0.1.10"
-twitter-scraper = { path = "lib/twitter-scraper" }
+twitter-scraper = { path = "lib/twitter-scraper", default-features = false, features = [ "rustls-tls" ] }
 
 [profile.release]
 lto = "fat"
