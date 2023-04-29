@@ -7,9 +7,7 @@ use serenity::{
     },
     model::channel::Message,
 };
-use zalgo::{
-    ZalgoBuilder,
-};
+use zalgo::ZalgoBuilder;
 
 #[command]
 #[description("Zalgoify a phrase")]
