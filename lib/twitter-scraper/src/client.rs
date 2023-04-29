@@ -1,5 +1,6 @@
 use crate::{
     Error,
+    GetUserByScreenNameResponse,
     GetUserTweetsResponse,
     GraphQlResponse,
 };
@@ -122,7 +123,7 @@ impl Client {
     pub async fn get_user_by_screen_name(
         &self,
         name: &str,
-    ) -> Result<GraphQlResponse<serde_json::Value>, Error> {
+    ) -> Result<GraphQlResponse<GetUserByScreenNameResponse>, Error> {
         const QUERY_HASH: &str = "sLVLhk0bGj3MVFEKTdax1w";
 
         let variables = json!({
@@ -144,12 +145,12 @@ impl Client {
     /// Get user tweets
     pub async fn get_user_tweets(
         &self,
-        user_id: u64,
+        user_id: &str,
     ) -> Result<GraphQlResponse<GetUserTweetsResponse>, Error> {
         const QUERY_HASH: &str = "CdG2Vuc1v6F5JyEngGpxVw";
 
         let variables = json!({
-            "userId": itoa::Buffer::new().format(user_id),
+            "userId":user_id,
             "count": 40,
             "includePromotedContent": true,
             "withQuickPromoteEligibilityTweetFields": true,

@@ -4,8 +4,8 @@ pub mod model;
 pub use crate::{
     client::Client,
     model::{
+        GetUserByScreenNameResponse,
         GetUserTweetsResponse,
-        GetUserTweetsResponseUser,
         GraphQlResponse,
     },
 };
@@ -48,13 +48,13 @@ mod test {
 
         client.init_session().await.expect("failed to init session");
 
-        client
+        let user = client
             .get_user_by_screen_name("dog_rates")
             .await
             .expect("failed to get user by screen name");
 
         let user_tweets = client
-            .get_user_tweets(4196983835)
+            .get_user_tweets(user.data.user.result.rest_id.as_str())
             .await
             .expect("failed to get user tweets");
         dbg!(user_tweets.data);

@@ -1,13 +1,9 @@
-/// The response for a GetUserTweets command
-#[derive(Debug, serde::Deserialize)]
-pub struct GetUserTweetsResponse {
-    pub user: User,
-}
+use super::{
+    ResultField,
+    UserField,
+};
 
-#[derive(Debug, serde::Deserialize)]
-pub struct User {
-    pub result: UserResult,
-}
+pub type GetUserTweetsResponse = UserField<ResultField<UserResult>>;
 
 #[derive(Debug, serde::Deserialize)]
 pub struct UserResult {
