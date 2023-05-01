@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-anyhow = "1.0.70"
+anyhow = "1.0.71"
 camino = { version = "1.1.4", features = [ "serde1" ] }
 # clokwerk = "0.4.0"
 clokwerk = { git = "https://github.com/mdsherry/clokwerk" }
