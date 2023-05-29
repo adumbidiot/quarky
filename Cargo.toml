@@ -10,7 +10,7 @@ anyhow = "1.0.71"
 camino = { version = "1.1.4", features = [ "serde1" ] }
 # clokwerk = "0.4.0"
 clokwerk = { git = "https://github.com/mdsherry/clokwerk" }
-chrono = { version = "0.4.24", default-features = false }
+chrono = { version = "0.4.25", default-features = false }
 fern = { version = "0.6.2", features = [ "colored" ] }
 http = "0.2.9"
 indexmap = "1.9.3"
