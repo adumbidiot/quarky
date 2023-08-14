@@ -15,7 +15,7 @@ fern = { version = "0.6.2", features = [ "colored" ] }
 http = "0.2.9"
 indexmap = "1.9.3"
 lazy_static = "1.4.0"
-log = "0.4.17"
+log = "0.4.20"
 rand = "0.8.5"
 reddit = { git = "https://github.com/adumbidiot/reddit-rs", default-features = false, features = [ "rustls-tls" ] }
 serde = { version = "1.0.163", features = [ "derive" ] }
