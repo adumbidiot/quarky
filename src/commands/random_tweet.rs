@@ -1,8 +1,5 @@
 use anyhow::Context as _;
-use log::{
-    info,
-    warn,
-};
+use log::warn;
 use rand::{
     prelude::SliceRandom,
     rngs::OsRng,
@@ -19,38 +16,30 @@ use serenity::{
 
 pub async fn get_random_tweet_url(user: &str) -> anyhow::Result<Option<String>> {
     // TODO: Cache?
-    let client = twitter_scraper::Client::new();
-    client
-        .init_session()
+    let client = rss_client::Client::new();
+    let feed = client
+        .get_feed(&format!("https://nitter.poast.org/{user}/media/rss"))
         .await
-        .context("failed to init session")?;
-    let user_response = client
-        .get_user_by_screen_name(user)
-        .await
-        .context("failed to get user by screen name")?;
-    let user_id = user_response.data.user.result.rest_id.as_str();
+        .context("failed to get feed")?;
 
-    info!("Twitter user id for \"{user}\" is \"{user_id}\"");
-
-    let user_tweets = client
-        .get_user_media(user_id, Some(200))
-        .await
-        .context("failed to get user tweets")?;
-    let timeline = user_tweets.data.user.result.timeline_v2.timeline;
-
-    let entries = timeline
-        .instructions
+    let entries: Vec<_> = feed
+        .channel
+        .item
         .iter()
-        .find_map(|instruction| match instruction {
-            twitter_scraper::GetUserTweetsResponseTimelineInstruction::AddEntries { entries } => {
-                Some(entries)
+        .filter_map(|item| {
+            // https://nitter.poast.org/<user>/status/<tweet_id>#m
+
+            let mut path_iter = item.link.link.path_segments()?;
+            if path_iter.next()? != user {
+                return None;
             }
-            _ => None,
+
+            if path_iter.next()? != "status" {
+                return None;
+            }
+
+            path_iter.next()
         })
-        .context("missing AddEntries instruction in timeline")?;
-    let entries: Vec<_> = entries
-        .iter()
-        .filter_map(|entry| entry.entry_id.strip_prefix("tweet-"))
         .collect();
 
     Ok(entries
@@ -70,17 +59,17 @@ pub async fn random_tweet(ctx: &Context, msg: &Message, mut args: Args) -> Comma
             msg.channel_id.say(&ctx.http, url).await?;
         }
         Ok(None) => {
-            warn!("No tweets retrieved for '{}'", user);
+            warn!("No tweets retrieved for \"{user}\"");
             msg.channel_id
-                .say(&ctx.http, format!("No tweets retrieved for {user}"))
+                .say(&ctx.http, format!("No tweets retrieved for \"{user}\""))
                 .await?;
             return Ok(());
         }
-        Err(e) => {
+        Err(error) => {
             msg.channel_id
-                .say(&ctx.http, format!("Twitter Api Error: {e}"))
+                .say(&ctx.http, format!("Twitter Api Error: {error:?}"))
                 .await?;
-            warn!("Failed to get random tweet for {user}: {e}");
+            warn!("Failed to get random tweet for \"{user}\": {error:?}");
             return Ok(());
         }
     }

@@ -1,3 +1,5 @@
+use url::Url;
+
 /// An RSS Feed
 #[derive(Debug, serde::Deserialize)]
 pub struct RssFeed {
@@ -46,5 +48,5 @@ pub struct ChannelItem {
 pub struct ChannelItemLink {
     /// The link
     #[serde(rename = "$text")]
-    pub urllink: Box<str>,
+    pub link: Url,
 }
