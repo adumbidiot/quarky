@@ -57,11 +57,10 @@ conf-files = [
 maintainer-scripts = "debian/"
 
 [package.metadata.deb.systemd-units]
-enable = true
-start = true
+enable = false
+start = false
 
 [package.metadata.rpi-deploy]
 targets = [
-    "armv7-unknown-linux-gnueabihf",
     "aarch64-unknown-linux-gnu",
 ]
