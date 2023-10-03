@@ -61,6 +61,9 @@ mod test {
         dbg!(user_tweets.data);
     }
 
+    // Twitter seems to have removed this endpoint.
+    // Keep it around for a bit in case they change their minds.
+    /*
     #[tokio::test]
     async fn get_user_media() {
         let client = Client::new();
@@ -78,4 +81,5 @@ mod test {
             .expect("failed to get user media");
         dbg!(user_media.data);
     }
+    */
 }

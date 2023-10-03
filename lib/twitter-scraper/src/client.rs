@@ -186,6 +186,7 @@ impl Client {
     }
 
     /// Get user media
+    #[deprecated = "twitter appears to have removed this endpoint"]
     pub async fn get_user_media(
         &self,
         user_id: &str,
