@@ -10,8 +10,11 @@ vulnerability = "deny"
 unmaintained = "deny"
 notice = "deny"
 ignore = [
-    # TODO: Remove Fern
-    "RUSTSEC-2021-0145",
+    # TODO: Investigate songbird
+    "RUSTSEC-2023-0037",
+    
+    # TODO: Wait for fix from serenity
+    "RUSTSEC-2023-0065",
 ]
 
 [licenses]
@@ -52,14 +55,6 @@ skip = [
     # Blocked on `ring` updating `spin` to `0.9.x`
     { name = "spin", version = "0.5.2" },
     
-    # Blocked on the ecosystem moving to windows 0.48
-    { name = "windows-targets", version = "0.42.2" },
-    { name = "windows_x86_64_msvc", version = "0.42.2" },
-    { name = "windows-sys", version = "0.45.0" },
-    
-    # Blocked on removing egg-mode
-    { name = "windows-sys", version = "0.42.0" },
-    
     # Blocked on serenity updating "syn"
     { name = "syn", version = "1.0.109" },
     
@@ -69,13 +64,19 @@ skip = [
     # Blocked on reqwest updating cookie_store
     { name = "idna", version = "0.2.3" },
     { name = "cookie_store", version = "0.16.1" },
+    
+    { name = "webpki-roots", version = "0.22.6" },
+    { name = "tokio-rustls", version = "0.23.4" },
+    { name = "socket2", version = "0.4.9" },
+    { name = "rustls", version = "0.20.9" },
+    { name = "indexmap", version = "1.9.3" },
+    { name = "idna", version = "0.3.0" },
+    { name = "hashbrown", version = "0.12.3" },
+    { name = "bitflags", version = "1.3.2" },
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs
-deny = [            
-    # https://github.com/RustSec/advisory-db/issues/305
-    { name = "rental", version = "*" },
-    
+deny = [                
     # Appears to be moving towards integrating rio more tightly for io_uring support
     { name = "sled", version = "*" },
     
@@ -93,26 +94,8 @@ deny = [
     # https://github.com/RustSec/advisory-db/issues/743
     { name = "fast-floats", version = "*" },
     
-    # https://github.com/RustSec/advisory-db/issues/880
-    { name = "nalgebra", version = "<0.26.2" },
-    
     # https://github.com/RustSec/advisory-db/issues/913
     { name = "hexchat", version = ">=0.3.0" },
-    
-    # https://github.com/RustSec/advisory-db/issues/613
-    { name = "out-reference", version = "*" },
-    
-    # https://github.com/RustSec/advisory-db/issues/235
-    { name = "shamir", version = "<2.0.0" },
-    
-    # https://github.com/RustSec/advisory-db/pull/671/files
-    { name = "raw-cpuid", version = ">3.1.0" },
-    
-    # https://github.com/RustSec/advisory-db/pull/649
-    { name = "derive-com-impl", version = "<=0.1.1" },
-    
-    # https://github.com/RustSec/advisory-db/pull/593
-    { name = "bite", version = "*" },
 ]
 
 [sources]

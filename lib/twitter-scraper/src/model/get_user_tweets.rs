@@ -31,6 +31,9 @@ pub enum TimelineInstruction {
 
     #[serde(rename = "TimelinePinEntry")]
     PinEntry,
+
+    #[serde(rename = "TimelineTerminateTimeline")]
+    TerminateTimeline,
 }
 
 #[derive(Debug, serde::Deserialize)]
