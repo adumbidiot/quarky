@@ -42,9 +42,13 @@ pub async fn get_random_tweet_url(user: &str) -> anyhow::Result<Option<String>> 
         })
         .collect();
 
-    Ok(entries
+    // Twitter embeds broke as of 10/10/2023.
+    // Use https://github.com/FixTweet/FixTweet instead for embedding.
+    let url = entries
         .choose(&mut OsRng)
-        .map(|tweet_id| format!("https://twitter.com/{user}/status/{tweet_id}")))
+        .map(|tweet_id| format!("https://fxtwitter.com/{user}/status/{tweet_id}"));
+
+    Ok(url)
 }
 
 #[command("random-tweet")]
