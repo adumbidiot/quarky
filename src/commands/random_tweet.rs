@@ -1,3 +1,4 @@
+use crate::RssClientKey;
 use anyhow::Context as _;
 use log::warn;
 use rand::{
@@ -14,13 +15,14 @@ use serenity::{
     model::channel::Message,
 };
 
-pub async fn get_random_tweet_url(user: &str) -> anyhow::Result<Option<String>> {
-    // TODO: Cache?
-    let client = rss_client::Client::new();
+pub async fn get_random_tweet_url(
+    client: &rss_client::Client,
+    user: &str,
+) -> anyhow::Result<Option<String>> {
     let feed = client
         .get_feed(&format!("https://nitter.poast.org/{user}/media/rss"))
         .await
-        .context("failed to get feed")?;
+        .with_context(|| format!("failed to get nitter rss feed for \"{user}\""))?;
 
     let entries: Vec<_> = feed
         .channel
@@ -57,8 +59,9 @@ pub async fn get_random_tweet_url(user: &str) -> anyhow::Result<Option<String>> 
 #[max_args(1)]
 pub async fn random_tweet(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let user = args.single::<String>().unwrap();
+    let rss_client = ctx.data.read().await.get::<RssClientKey>().unwrap().clone();
 
-    match get_random_tweet_url(&user).await {
+    match get_random_tweet_url(&rss_client, &user).await {
         Ok(Some(url)) => {
             msg.channel_id.say(&ctx.http, url).await?;
         }

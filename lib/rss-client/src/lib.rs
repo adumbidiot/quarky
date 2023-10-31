@@ -20,6 +20,7 @@ pub enum Error {
 }
 
 /// An RSS Client
+#[derive(Debug, Clone)]
 pub struct Client {
     /// The inner http client
     pub client: reqwest::Client,
