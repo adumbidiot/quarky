@@ -200,14 +200,16 @@ async fn schedule_robotics_reminder(
         let http = http.clone();
         let cache = cache.clone();
         tokio::spawn(async move {
-            let msg = match crate::random_tweet::get_random_tweet_url("dog_rates")
-                .await
-                .map_err(|error| error!("{error}"))
-                .ok()
-                .flatten()
-            {
-                Some(link) => format!("{msg}\n{link}"),
-                None => msg,
+            let msg = match crate::random_tweet::get_random_tweet_url("dog_rates").await {
+                Ok(Some(link)) => format!("{msg}\n{link}"),
+                Ok(None) => {
+                    error!("feed empty");
+                    msg
+                }
+                Err(error) => {
+                    error!("{error:?}");
+                    msg
+                }
             };
 
             // TODO: Ensure client is started and connected before running
@@ -216,23 +218,14 @@ async fn schedule_robotics_reminder(
     });
 }
 
-fn setup(cli_options: CliOptions) -> anyhow::Result<Config> {
-    eprintln!("loading config @ `{}`...", cli_options.config);
+fn main() -> anyhow::Result<()> {
+    let cli_options: CliOptions = argh::from_env();
+    eprintln!("loading config @ \"{}\"...", cli_options.config);
     let config = Config::load(&cli_options.config)
-        .with_context(|| format!("failed to load `{}`", &cli_options.config))?;
-
+        .with_context(|| format!("failed to load \"{}\"", &cli_options.config))?;
     self::logger::setup(&config).context("failed to setup logger")?;
 
-    Ok(config)
-}
-
-fn main() -> anyhow::Result<()> {
-    let cli_options = argh::from_env();
-    let config = setup(cli_options)?;
-
-    info!("Using prefix '{}'", config.prefix);
-
-    let tokio_runtime = TokioRuntime::new().context("failed to start tokio runtime")?;
+    let tokio_runtime = TokioRuntime::new()?;
     tokio_runtime.block_on(async_main(config))?;
     drop(tokio_runtime);
 
@@ -240,6 +233,8 @@ fn main() -> anyhow::Result<()> {
 }
 
 async fn async_main(config: Config) -> anyhow::Result<()> {
+    info!("Using prefix \"{}\"", config.prefix);
+
     // Init Framework
     let framework = StandardFramework::new()
         .configure(|c| c.prefix(&config.prefix))
