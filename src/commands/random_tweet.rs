@@ -14,13 +14,40 @@ use serenity::{
     },
     model::channel::Message,
 };
+use std::{
+    future::Future,
+    time::Duration,
+};
+
+async fn retry<FN, T, E, FU>(mut func: FN) -> Result<T, E>
+where
+    FN: FnMut() -> FU,
+    FU: Future<Output = Result<T, E>>,
+{
+    let mut num_try = 0;
+    loop {
+        let future = (func)();
+        match future.await {
+            Ok(value) => {
+                break Ok(value);
+            }
+            Err(_error) if num_try < 3 => {
+                num_try += 1;
+                tokio::time::sleep(Duration::from_secs(num_try)).await;
+            }
+            Err(error) => {
+                break Err(error);
+            }
+        }
+    }
+}
 
 pub async fn get_random_tweet_url(
     client: &rss_client::Client,
     user: &str,
 ) -> anyhow::Result<Option<String>> {
-    let feed = client
-        .get_feed(&format!("https://nitter.poast.org/{user}/media/rss"))
+    let url = format!("https://nitter.poast.org/{user}/media/rss");
+    let feed = retry(|| client.get_feed(&url))
         .await
         .with_context(|| format!("failed to get nitter rss feed for \"{user}\""))?;
 
