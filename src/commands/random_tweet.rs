@@ -1,3 +1,4 @@
+use crate::RssClientKey;
 use anyhow::Context as _;
 use log::warn;
 use rand::{
@@ -13,21 +14,49 @@ use serenity::{
     },
     model::channel::Message,
 };
+use std::{
+    future::Future,
+    time::Duration,
+};
 
-pub async fn get_random_tweet_url(user: &str) -> anyhow::Result<Option<String>> {
-    // TODO: Cache?
-    let client = rss_client::Client::new();
-    let feed = client
-        .get_feed(&format!("https://nitter.poast.org/{user}/media/rss"))
+async fn retry<FN, T, E, FU>(mut func: FN) -> Result<T, E>
+where
+    FN: FnMut() -> FU,
+    FU: Future<Output = Result<T, E>>,
+{
+    let mut num_try = 0;
+    loop {
+        let future = (func)();
+        match future.await {
+            Ok(value) => {
+                break Ok(value);
+            }
+            Err(_error) if num_try < 3 => {
+                num_try += 1;
+                tokio::time::sleep(Duration::from_secs(num_try)).await;
+            }
+            Err(error) => {
+                break Err(error);
+            }
+        }
+    }
+}
+
+pub async fn get_random_tweet_url(
+    client: &rss_client::Client,
+    user: &str,
+) -> anyhow::Result<Option<String>> {
+    let url = format!("https://twiiit.com/{user}/media/rss");
+    let feed = retry(|| client.get_feed(&url))
         .await
-        .context("failed to get feed")?;
+        .with_context(|| format!("failed to get nitter rss feed for \"{user}\""))?;
 
     let entries: Vec<_> = feed
         .channel
         .item
         .iter()
         .filter_map(|item| {
-            // https://nitter.poast.org/<user>/status/<tweet_id>#m
+            // https://<domain>/<user>/status/<tweet_id>#m
 
             let mut path_iter = item.link.link.path_segments()?;
             if path_iter.next()? != user {
@@ -57,8 +86,9 @@ pub async fn get_random_tweet_url(user: &str) -> anyhow::Result<Option<String>> 
 #[max_args(1)]
 pub async fn random_tweet(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let user = args.single::<String>().unwrap();
+    let rss_client = ctx.data.read().await.get::<RssClientKey>().unwrap().clone();
 
-    match get_random_tweet_url(&user).await {
+    match get_random_tweet_url(&rss_client, &user).await {
         Ok(Some(url)) => {
             msg.channel_id.say(&ctx.http, url).await?;
         }

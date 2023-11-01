@@ -99,11 +99,11 @@ async fn help(
     groups: &[&'static CommandGroup],
     owners: HashSet<UserId>,
 ) -> CommandResult {
-    if let Err(e) = help_commands::with_embeds(context, msg, args, help_options, groups, owners)
+    if let Err(error) = help_commands::with_embeds(context, msg, args, help_options, groups, owners)
         .await
         .context("failed to send help")
     {
-        error!("{:?}", e);
+        error!("{error:?}");
     }
     Ok(())
 }
@@ -111,7 +111,13 @@ async fn help(
 struct RedditClientKey;
 
 impl TypeMapKey for RedditClientKey {
-    type Value = Arc<RedditClient>;
+    type Value = RedditClient;
+}
+
+struct RssClientKey;
+
+impl TypeMapKey for RssClientKey {
+    type Value = rss_client::Client;
 }
 
 struct Handler;
@@ -129,7 +135,7 @@ impl EventHandler for Handler {
             }
         }
 
-        info!("choosing game state {}", random_number);
+        info!("choosing game state {random_number}");
         info!("{} is connected!", ready.user.name);
     }
 
@@ -194,20 +200,31 @@ async fn schedule_robotics_reminder(
     let msg = msg.to_string();
     let http = client.cache_and_http.http.clone();
     let cache = client.cache_and_http.cache.clone();
+    let rss_client = client
+        .data
+        .read()
+        .await
+        .get::<RssClientKey>()
+        .cloned()
+        .unwrap();
 
     scheduler.every(day).at(time).run(move || {
         let msg = msg.clone();
         let http = http.clone();
         let cache = cache.clone();
+        let rss_client = rss_client.clone();
         tokio::spawn(async move {
-            let msg = match crate::random_tweet::get_random_tweet_url("dog_rates")
-                .await
-                .map_err(|error| error!("{error}"))
-                .ok()
-                .flatten()
+            let msg = match self::random_tweet::get_random_tweet_url(&rss_client, "dog_rates").await
             {
-                Some(link) => format!("{msg}\n{link}"),
-                None => msg,
+                Ok(Some(link)) => format!("{msg}\n{link}"),
+                Ok(None) => {
+                    error!("feed empty");
+                    msg
+                }
+                Err(error) => {
+                    error!("{error:?}");
+                    msg
+                }
             };
 
             // TODO: Ensure client is started and connected before running
@@ -216,23 +233,14 @@ async fn schedule_robotics_reminder(
     });
 }
 
-fn setup(cli_options: CliOptions) -> anyhow::Result<Config> {
-    eprintln!("loading config @ `{}`...", cli_options.config);
+fn main() -> anyhow::Result<()> {
+    let cli_options: CliOptions = argh::from_env();
+    eprintln!("loading config @ \"{}\"...", cli_options.config);
     let config = Config::load(&cli_options.config)
-        .with_context(|| format!("failed to load `{}`", &cli_options.config))?;
-
+        .with_context(|| format!("failed to load \"{}\"", &cli_options.config))?;
     self::logger::setup(&config).context("failed to setup logger")?;
 
-    Ok(config)
-}
-
-fn main() -> anyhow::Result<()> {
-    let cli_options = argh::from_env();
-    let config = setup(cli_options)?;
-
-    info!("Using prefix '{}'", config.prefix);
-
-    let tokio_runtime = TokioRuntime::new().context("failed to start tokio runtime")?;
+    let tokio_runtime = TokioRuntime::new()?;
     tokio_runtime.block_on(async_main(config))?;
     drop(tokio_runtime);
 
@@ -240,6 +248,8 @@ fn main() -> anyhow::Result<()> {
 }
 
 async fn async_main(config: Config) -> anyhow::Result<()> {
+    info!("Using prefix \"{}\"", config.prefix);
+
     // Init Framework
     let framework = StandardFramework::new()
         .configure(|c| c.prefix(&config.prefix))
@@ -249,7 +259,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
             Box::pin(async move {
                 match error {
                     DispatchError::Ratelimited(duration) => {
-                        if let Err(e) = msg
+                        if let Err(error) = msg
                             .channel_id
                             .say(
                                 &ctx.http,
@@ -260,20 +270,20 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                             )
                             .await
                         {
-                            warn!("Failed to send ratelimited warning message: {}", e);
+                            warn!("Failed to send ratelimited warning message: {error}");
                         }
                     }
                     DispatchError::CommandDisabled => {
-                        if let Err(e) = msg
+                        if let Err(error) = msg
                             .channel_id
-                            .say(&ctx.http, format!("Command '{cmd_name}' disabled."))
+                            .say(&ctx.http, format!("Command \"{cmd_name}\" disabled."))
                             .await
                         {
-                            warn!("Failed to send disabled command warning message: {}", e);
+                            warn!("Failed to send disabled command warning message: {error}");
                         }
                     }
                     DispatchError::NotEnoughArguments { min, given } => {
-                        if let Err(e) = msg
+                        if let Err(error) = msg
                             .channel_id
                             .say(
                                 &ctx.http,
@@ -281,11 +291,11 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                             )
                             .await
                         {
-                            warn!("Failed to send not enough args warning message: {}", e);
+                            warn!("Failed to send not enough args warning message: {error}");
                         }
                     }
                     DispatchError::TooManyArguments { max, given } => {
-                        if let Err(e) = msg
+                        if let Err(error) = msg
                             .channel_id
                             .say(
                                 &ctx.http,
@@ -293,7 +303,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                             )
                             .await
                         {
-                            warn!("Failed to send too many args warning message: {}", e);
+                            warn!("Failed to send too many args warning message: {error}");
                         }
                     }
                     _ => {
@@ -317,12 +327,13 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
     .await
     .context("failed to build client")?;
 
-    let reddit_client = Arc::from(RedditClient::new());
-
+    let reddit_client = RedditClient::new();
+    let rss_client = rss_client::Client::new();
     {
         let mut client_data = client.data.write().await;
 
         client_data.insert::<RedditClientKey>(reddit_client);
+        client_data.insert::<RssClientKey>(rss_client);
     }
 
     // Start Scheduler
@@ -332,6 +343,8 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
     const AFTER_SCHOOL_ANNOUNCE: &str = "@everyone Robotics Club after school today!";
     const LUNCH_ANNOUNCE: &str = "@everyone Robotics Club during plus and lunch today!";
     const NOON: &str = "12:00:00";
+    // TODO: This is flawed and we are lucky it is working correctly (spurrious wakeups).
+    // Replace with a better abstraction.
     let scheduler_shutdown_notify = Arc::new(Notify::new());
 
     schedule_robotics_reminder(&client, &mut scheduler, Monday, NOON, AFTER_SCHOOL_ANNOUNCE).await;
@@ -363,24 +376,24 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                     info!("Beginning shutdown...");
                     shard_manager.lock().await.shutdown_all().await;
                 }
-                Err(e) => {
-                    warn!("Failed to register ctrl-c handler: {}", e);
+                Err(error) => {
+                    warn!("Failed to register ctrl-c handler: {error}");
                 }
             }
         });
     }
 
     info!("Logging in...");
-    if let Err(why) = client.start().await {
-        error!("Error running client: {}", why);
+    if let Err(error) = client.start().await {
+        error!("Error running client: {error}");
     }
 
     info!("Shutting down...");
     scheduler_shutdown_notify.notify_one();
     drop(client); // Hopefully gets rid of all other Arcs...
 
-    if let Err(e) = handle.await {
-        error!("Scheduler Crashed: {e}");
+    if let Err(error) = handle.await {
+        error!("Scheduler Crashed: {error}");
     }
 
     Ok(())

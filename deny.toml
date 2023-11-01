@@ -73,6 +73,9 @@ skip = [
     { name = "idna", version = "0.3.0" },
     { name = "hashbrown", version = "0.12.3" },
     { name = "bitflags", version = "1.3.2" },
+    
+    { name = "untrusted", version = "0.7.1" },
+    { name = "ring", version = "0.16.20" },
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs
