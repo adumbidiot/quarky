@@ -19,10 +19,11 @@ use std::{
     time::Duration,
 };
 
-async fn retry<FN, T, E, FU>(mut func: FN) -> Result<T, E>
+async fn retry<FN, T, E, FU>(mut func: FN, max_tries: u64) -> Result<T, E>
 where
     FN: FnMut() -> FU,
     FU: Future<Output = Result<T, E>>,
+    E: std::error::Error,
 {
     let mut num_try = 0;
     loop {
@@ -31,7 +32,9 @@ where
             Ok(value) => {
                 break Ok(value);
             }
-            Err(_error) if num_try < 3 => {
+            Err(error) if num_try < max_tries => {
+                warn!("{error}");
+
                 num_try += 1;
                 tokio::time::sleep(Duration::from_secs(num_try)).await;
             }
@@ -47,7 +50,7 @@ pub async fn get_random_tweet_url(
     user: &str,
 ) -> anyhow::Result<Option<String>> {
     let url = format!("https://twiiit.com/{user}/media/rss");
-    let feed = retry(|| client.get_feed(&url))
+    let feed = retry(|| client.get_feed(&url), 10)
         .await
         .with_context(|| format!("failed to get nitter rss feed for \"{user}\""))?;
 
