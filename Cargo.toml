@@ -14,7 +14,7 @@ clokwerk = { git = "https://github.com/mdsherry/clokwerk" }
 chrono = { version = "0.4.31", default-features = false }
 fern = { version = "0.6.2", features = [ "colored" ] }
 http = "1.0.0"
-indexmap = "2.1.0"
+indexmap = "2.2.6"
 lazy_static = "1.4.0"
 log = "0.4.20"
 rand = "0.8.5"
