@@ -15,16 +15,16 @@ pub use crate::{
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     /// http error
-    #[error(transparent)]
+    #[error("http error")]
     Reqwest(#[from] reqwest::Error),
 
     /// Failed to join tokio task
     #[error(transparent)]
     TokioJoin(#[from] tokio::task::JoinError),
 
-    /// Cookie error
-    #[error(transparent)]
-    Cookie(#[from] cookie_store::CookieError),
+    /// Cookie Store error
+    #[error("cookie store error")]
+    CookieStore(#[from] cookie_store::CookieError),
 
     /// Missing guest token
     #[error("missing guest token")]

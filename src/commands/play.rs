@@ -1,3 +1,4 @@
+use crate::RedditClientKey;
 use serenity::{
     client::Context,
     framework::standard::{
@@ -7,10 +8,22 @@ use serenity::{
     },
     model::channel::Message,
 };
+use songbird::input::YoutubeDl;
 
 #[command]
 #[bucket("voice")]
 pub async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    // Piggy back off of reddit client
+    let client = ctx
+        .data
+        .read()
+        .await
+        .get::<RedditClientKey>()
+        .unwrap()
+        .client
+        .client
+        .clone();
+
     let url = match args.single::<String>() {
         Ok(url) => url,
         Err(_) => {
@@ -29,8 +42,12 @@ pub async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
         return Ok(());
     }
 
-    let guild_id = match ctx.cache.guild_channel(msg.channel_id) {
-        Some(channel) => channel.guild_id,
+    let maybe_guild_id = ctx
+        .cache
+        .channel(msg.channel_id)
+        .map(|channel| channel.guild_id);
+    let guild_id = match maybe_guild_id {
+        Some(guild_id) => guild_id,
         None => {
             msg.channel_id
                 .say(&ctx.http, "Error finding channel info")
@@ -46,8 +63,8 @@ pub async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
 
     if let Some(handler) = manager.get(guild_id) {
         let mut handler = handler.lock().await;
-        let source = songbird::ytdl(url).await?;
-        handler.play_source(source);
+        let source = YoutubeDl::new(client, url);
+        handler.play_only_input(source.into());
 
         msg.channel_id.say(&ctx.http, "Playing song").await?;
     } else {

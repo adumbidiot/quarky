@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 mod cli_options;
 mod commands;
 mod config;
@@ -30,12 +32,8 @@ use log::{
 };
 use rand::Rng;
 use serenity::{
-    client::{
-        Client,
-        Context,
-        EventHandler,
-    },
     framework::standard::{
+        buckets::BucketBuilder,
         help_commands,
         macros::{
             group,
@@ -44,19 +42,18 @@ use serenity::{
         Args,
         CommandGroup,
         CommandResult,
+        Configuration as StandardFrameworkConfiguration,
         DispatchError,
         HelpOptions,
         StandardFramework,
     },
+    gateway::ActivityData,
     model::{
         channel::{
             Channel,
             Message,
         },
-        gateway::{
-            Activity,
-            Ready,
-        },
+        gateway::Ready,
         id::UserId,
         voice::VoiceState,
     },
@@ -68,10 +65,7 @@ use std::{
     sync::Arc,
     time::Duration,
 };
-use tokio::{
-    runtime::Runtime as TokioRuntime,
-    sync::Notify,
-};
+use tokio::sync::Notify;
 
 #[group]
 #[commands(
@@ -128,10 +122,10 @@ impl EventHandler for Handler {
         let random_number: u8 = rand::thread_rng().gen_range(0..2);
         match random_number {
             0 => {
-                ctx.set_activity(Activity::playing("with my tail")).await;
+                ctx.set_activity(Some(ActivityData::playing("with my tail")));
             }
             _ => {
-                ctx.set_activity(Activity::listening("hooman noises")).await;
+                ctx.set_activity(Some(ActivityData::listening("hooman noises")));
             }
         }
 
@@ -156,7 +150,7 @@ impl EventHandler for Handler {
                     #[allow(clippy::single_match)]
                     match ch {
                         Channel::Guild(channel) => {
-                            if let Ok(members) = channel.members(&ctx.cache).await {
+                            if let Ok(members) = channel.members(&ctx.cache) {
                                 if members.len() == 1
                                     && ctx
                                         .http
@@ -198,8 +192,8 @@ async fn schedule_robotics_reminder(
     msg: &str,
 ) {
     let msg = msg.to_string();
-    let http = client.cache_and_http.http.clone();
-    let cache = client.cache_and_http.cache.clone();
+    let http = client.http.clone();
+    let cache = client.cache.clone();
     let rss_client = client
         .data
         .read()
@@ -240,7 +234,9 @@ fn main() -> anyhow::Result<()> {
         .with_context(|| format!("failed to load \"{}\"", &cli_options.config))?;
     self::logger::setup(&config).context("failed to setup logger")?;
 
-    let tokio_runtime = TokioRuntime::new()?;
+    let tokio_runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
     tokio_runtime.block_on(async_main(config))?;
     drop(tokio_runtime);
 
@@ -251,8 +247,12 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
     info!("Using prefix \"{}\"", config.prefix);
 
     // Init Framework
-    let framework = StandardFramework::new()
-        .configure(|c| c.prefix(&config.prefix))
+    let standard_framework_configuration =
+        StandardFrameworkConfiguration::new().prefix(&config.prefix);
+
+    let framework = StandardFramework::new();
+    framework.configure(standard_framework_configuration);
+    let framework = framework
         .group(&GENERAL_GROUP)
         .help(&HELP)
         .on_dispatch_error(|ctx, msg, error, cmd_name| {
@@ -312,9 +312,9 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
                 }
             })
         })
-        .bucket("simple", |b| b.delay(1))
+        .bucket("simple", BucketBuilder::default().delay(1))
         .await
-        .bucket("voice", |b| b.delay(1))
+        .bucket("voice", BucketBuilder::default().delay(1))
         .await;
 
     let mut client = Client::builder(
@@ -374,7 +374,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
             match tokio::signal::ctrl_c().await {
                 Ok(()) => {
                     info!("Beginning shutdown...");
-                    shard_manager.lock().await.shutdown_all().await;
+                    shard_manager.shutdown_all().await;
                 }
                 Err(error) => {
                     warn!("Failed to register ctrl-c handler: {error}");

@@ -118,12 +118,15 @@ pub async fn movie_quote(ctx: &Context, msg: &Message, _args: Args) -> CommandRe
 pub struct MemorableQuote {
     pub movie: &'static str,
     pub quote: &'static str,
+    #[allow(dead_code)]
     pub extra: IdQuote,
 }
 
 #[derive(Debug)]
 pub struct IdQuote {
+    #[allow(dead_code)]
     pub id: u64,
+    #[allow(dead_code)]
     pub quote: &'static str,
 }
 
@@ -140,6 +143,7 @@ impl IdQuote {
 #[derive(Debug)]
 pub struct Quote {
     pub movie: &'static str,
+    #[allow(dead_code)]
     pub quote: &'static str,
     pub memorable_quote: IdQuote,
     pub nonmemorable_quote: IdQuote,

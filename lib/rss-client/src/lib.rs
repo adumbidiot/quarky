@@ -1,6 +1,9 @@
 mod model;
 
-pub use self::model::RssFeed;
+pub use self::model::{
+    ChannelLink,
+    RssFeed,
+};
 use std::time::Duration;
 
 /// Library error type
@@ -68,7 +71,7 @@ mod tests {
     async fn it_works() {
         let client = Client::new();
         let feed = client
-            .get_feed("https://nitter.poast.org/dog_rates/media/rss") // https://nitter.poast.org/dog_rates/rss
+            .get_feed("https://nitter.privacydev.net/dog_rates/media/rss") // https://nitter.poast.org/dog_rates/rss
             .await
             .expect("failed to get feed");
         dbg!(feed);

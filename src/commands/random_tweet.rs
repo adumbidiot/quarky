@@ -49,8 +49,8 @@ pub async fn get_random_tweet_url(
     client: &rss_client::Client,
     user: &str,
 ) -> anyhow::Result<Option<String>> {
-    let url = format!("https://twiiit.com/{user}/media/rss");
-    let feed = retry(|| client.get_feed(&url), 10)
+    let url = format!("https://nitter.privacydev.net/{user}/media/rss");
+    let feed = retry(|| client.get_feed(&url), 3)
         .await
         .with_context(|| format!("failed to get nitter rss feed for \"{user}\""))?;
 

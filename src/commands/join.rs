@@ -1,3 +1,4 @@
+use anyhow::Context as _;
 use log::error;
 use serenity::{
     client::Context,
@@ -13,8 +14,19 @@ use serenity::{
 #[command]
 #[bucket("voice")]
 async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    let guild = match msg.guild(&ctx.cache) {
-        Some(guild) => guild,
+    let (maybe_guild_id, maybe_channel_id) = match msg.guild(&ctx.cache) {
+        Some(guild) => {
+            let maybe_channel_id = guild
+                .voice_states
+                .get(&msg.author.id)
+                .and_then(|voice_state| voice_state.channel_id);
+            (Some(guild.id), maybe_channel_id)
+        }
+        None => (None, None),
+    };
+
+    let guild_id = match maybe_guild_id {
+        Some(guild_id) => guild_id,
         None => {
             msg.channel_id
                 .say(&ctx.http, "Groups and DMs not supported")
@@ -23,12 +35,7 @@ async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         }
     };
 
-    let channel_id = guild
-        .voice_states
-        .get(&msg.author.id)
-        .and_then(|voice_state| voice_state.channel_id);
-
-    let connect_to = match channel_id {
+    let connect_to = match maybe_channel_id {
         Some(channel) => channel,
         None => {
             msg.reply(&ctx.http, "Not in a voice channel").await?;
@@ -38,24 +45,25 @@ async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 
     let manager = songbird::get(ctx)
         .await
-        .expect("Songbird Voice client placed in at initialisation.")
+        .expect("missing songbird voice client")
         .clone();
 
-    let (_call, result) = manager.join(guild.id, connect_to).await;
+    let _call = match manager
+        .join(guild_id, connect_to)
+        .await
+        .context("failed to join voice channel")
+    {
+        Ok(call) => call,
+        Err(error) => {
+            error!("{error}");
+            msg.channel_id.say(&ctx.http, format!("{error}")).await?;
+            return Ok(());
+        }
+    };
 
-    match result {
-        Ok(()) => {
-            msg.channel_id
-                .say(&ctx.http, format!("Joined {}", connect_to.mention()))
-                .await?;
-        }
-        Err(e) => {
-            msg.channel_id
-                .say(&ctx.http, "Error joining the voice channel")
-                .await?;
-            error!("Failed to join the voice channel: {}", e);
-        }
-    }
+    msg.channel_id
+        .say(&ctx.http, format!("Joined {}", connect_to.mention()))
+        .await?;
 
     Ok(())
 }
