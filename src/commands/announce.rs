@@ -12,7 +12,6 @@ use serenity::{
     },
     http::Http,
     model::channel::{
-        Channel,
         ChannelType,
         Message,
     },

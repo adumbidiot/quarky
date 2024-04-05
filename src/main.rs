@@ -1,4 +1,4 @@
-#![allow(warnings)]
+#![allow(deprecated)]
 
 mod cli_options;
 mod commands;
@@ -32,11 +32,6 @@ use log::{
 };
 use rand::Rng;
 use serenity::{
-    client::{
-        Client,
-        Context,
-        EventHandler,
-    },
     framework::standard::{
         buckets::BucketBuilder,
         help_commands,
@@ -58,10 +53,7 @@ use serenity::{
             Channel,
             Message,
         },
-        gateway::{
-            Activity,
-            Ready,
-        },
+        gateway::Ready,
         id::UserId,
         voice::VoiceState,
     },
@@ -73,10 +65,7 @@ use std::{
     sync::Arc,
     time::Duration,
 };
-use tokio::{
-    runtime::Runtime,
-    sync::Notify,
-};
+use tokio::sync::Notify;
 
 #[group]
 #[commands(
@@ -261,7 +250,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
     let standard_framework_configuration =
         StandardFrameworkConfiguration::new().prefix(&config.prefix);
 
-    let mut framework = StandardFramework::new();
+    let framework = StandardFramework::new();
     framework.configure(standard_framework_configuration);
     let framework = framework
         .group(&GENERAL_GROUP)
