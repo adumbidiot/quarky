@@ -33,36 +33,29 @@ pub async fn announce(ctx: &Context, _msg: &Message, mut args: Args) -> CommandR
 
 pub async fn announce_discord(http: &Http, cache: &Cache, data: &str) {
     for guild_id in cache.guilds().into_iter() {
-        if let Some(guild) = cache.guild(guild_id) {
-            let channel = guild
-                .channels
-                .values()
-                .filter_map(|channel| match channel {
-                    Channel::Guild(channel) => Some(channel),
-                    _ => None,
-                })
-                .find(|channel| {
+        let (guild_name, channel_id, channel_name) = match cache.guild(guild_id) {
+            Some(guild) => {
+                let guild_name = guild.name.to_string();
+
+                let maybe_channel = guild.channels.values().find(|channel| {
                     channel.name == "announcements" && channel.kind == ChannelType::Text
                 });
+                let channel = match maybe_channel {
+                    Some(channel) => channel,
+                    None => continue,
+                };
+                let channel_name = channel.name().to_string();
 
-            if let Some(channel) = channel {
-                info!(
-                    r#"Announcing "{}" to discord channel "{}/{}""#,
-                    data,
-                    guild.name,
-                    channel.name()
-                );
-
-                // Don't let one failure stop the fun
-                if let Err(e) = channel.say(&http, data).await {
-                    warn!(
-                        "Failed to announce in channel '{}' in '{}': {}",
-                        channel.name(),
-                        guild.name,
-                        e
-                    );
-                }
+                (guild_name, channel.id, channel_name)
             }
+            None => continue,
+        };
+
+        info!("Announcing \"{data}\" to discord channel \"{guild_name}/{channel_name}\"");
+
+        // Don't let one failure stop the fun
+        if let Err(error) = channel_id.say(&http, data).await {
+            warn!("Failed to announce in channel \"{channel_name}\" in \"{guild_name}\": {error}");
         }
     }
 }

@@ -1,6 +1,9 @@
 mod model;
 
-pub use self::model::RssFeed;
+pub use self::model::{
+    ChannelLink,
+    RssFeed,
+};
 use std::time::Duration;
 
 /// Library error type

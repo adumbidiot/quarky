@@ -9,13 +9,7 @@ targets = [
 vulnerability = "deny"
 unmaintained = "deny"
 notice = "deny"
-ignore = [
-    # TODO: Investigate songbird
-    "RUSTSEC-2023-0037",
-    
-    # TODO: Wait for fix from serenity
-    "RUSTSEC-2023-0065",
-]
+ignore = []
 
 [licenses]
 unlicensed = "deny"
@@ -49,33 +43,10 @@ skip = [
     # Blocked on `crossbeam-utils` bumping `cfg-if` to `1.0.x`
     { name = "cfg-if", version = "1.0.0" },
     
-    # Blocked on `enum-primitive` updating `num-traits` to `0.2.x`
-    { name = "num-traits", version = "0.1.43" },
-    
-    # Blocked on `ring` updating `spin` to `0.9.x`
-    { name = "spin", version = "0.5.2" },
-    
     # Blocked on serenity updating "syn"
     { name = "syn", version = "1.0.109" },
     
-    # Blocked on multiple crates updating base64
-    { name = "base64", version = "0.13.1" },
-    
-    # Blocked on reqwest updating cookie_store
-    { name = "idna", version = "0.2.3" },
-    { name = "cookie_store", version = "0.16.1" },
-    
-    { name = "webpki-roots", version = "0.22.6" },
-    { name = "tokio-rustls", version = "0.23.4" },
-    { name = "socket2", version = "0.4.9" },
-    { name = "rustls", version = "0.20.9" },
-    { name = "indexmap", version = "1.9.3" },
-    { name = "idna", version = "0.3.0" },
-    { name = "hashbrown", version = "0.12.3" },
     { name = "bitflags", version = "1.3.2" },
-    
-    { name = "untrusted", version = "0.7.1" },
-    { name = "ring", version = "0.16.20" },
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs
