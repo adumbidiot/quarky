@@ -46,7 +46,22 @@ skip = [
     # Blocked on serenity updating "syn"
     { name = "syn", version = "1.0.109" },
     
+    # Blocked on serenity 13
+    { name = "http", version = "0.2.12" },
+    { name = "http-body", version = "0.4.6" },
+    { name = "hyper", version = "0.14.28" },
+    { name = "hyper-rustls", version = "0.24.2" },
+    { name = "reqwest", version = "0.11.27" },
+    { name = "rustls", version = "0.21.10" },
+    { name = "tokio-rustls", version = "0.24.1" },
+    { name = "webpki-roots", version = "0.25.4" },
+    { name = "rustls-webpki", version = "0.101.7" },
+    
     { name = "bitflags", version = "1.3.2" },
+    { name = "windows_x86_64_msvc", version = "0.48.5" },
+    { name = "windows_x86_64_gnu", version = "0.48.5" },
+    { name = "windows-targets", version = "0.48.5" },
+    { name = "windows-sys", version = "0.48.0" },
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs
