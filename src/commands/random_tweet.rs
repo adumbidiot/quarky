@@ -5,6 +5,7 @@ use rand::{
     prelude::SliceRandom,
     rngs::OsRng,
 };
+use rss_client::RssFeed;
 use serenity::{
     client::Context,
     framework::standard::{
@@ -19,7 +20,7 @@ use std::{
     time::Duration,
 };
 
-async fn retry<FN, T, E, FU>(mut func: FN, max_tries: u64) -> Result<T, E>
+async fn retry<FN, T, E, FU>(mut func: FN, max_tries: u32) -> Result<T, E>
 where
     FN: FnMut() -> FU,
     FU: Future<Output = Result<T, E>>,
@@ -36,7 +37,7 @@ where
                 warn!("{error}");
 
                 num_try += 1;
-                tokio::time::sleep(Duration::from_secs(num_try)).await;
+                tokio::time::sleep(Duration::from_secs(2_u64.pow(num_try))).await;
             }
             Err(error) => {
                 break Err(error);
@@ -45,14 +46,27 @@ where
     }
 }
 
+async fn get_nitter_feed(
+    client: &rss_client::Client,
+    host: &str,
+    user: &str,
+) -> anyhow::Result<RssFeed> {
+    let url = format!("{host}/{user}/media/rss");
+    retry(|| client.get_feed(&url), 3)
+        .await
+        .with_context(|| format!("failed to get nitter rss feed for \"{user}\" from \"{host}\""))
+}
+
 pub async fn get_random_tweet_url(
     client: &rss_client::Client,
     user: &str,
 ) -> anyhow::Result<Option<String>> {
-    let url = format!("https://nitter.privacydev.net/{user}/media/rss");
-    let feed = retry(|| client.get_feed(&url), 3)
-        .await
-        .with_context(|| format!("failed to get nitter rss feed for \"{user}\""))?;
+    let feed_result = get_nitter_feed(client, "https://nitter.privacydev.net", user).await;
+
+    let feed = match feed_result {
+        Ok(feed) => feed,
+        Err(_error) => get_nitter_feed(client, "https://nitter.poast.org", user).await?,
+    };
 
     let entries: Vec<_> = feed
         .channel

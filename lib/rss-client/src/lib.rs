@@ -6,6 +6,8 @@ pub use self::model::{
 };
 use std::time::Duration;
 
+const USER_AGENT_STR: &str = concat!(env!("CARGO_CRATE_NAME"), "/", env!("CARGO_PKG_VERSION"));
+
 /// Library error type
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -34,6 +36,7 @@ impl Client {
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::builder()
+                .user_agent(USER_AGENT_STR)
                 .connect_timeout(Duration::from_secs(10))
                 .build()
                 .expect("failed to build client"),
@@ -69,11 +72,11 @@ mod tests {
 
     #[tokio::test]
     async fn it_works() {
+        // https://nitter.privacydev.net/dog_rates/media/rss
+        // https://nitter.poast.org/dog_rates/rss
+        let url = "https://nitter.poast.org/dog_rates/rss";
         let client = Client::new();
-        let feed = client
-            .get_feed("https://nitter.privacydev.net/dog_rates/media/rss") // https://nitter.poast.org/dog_rates/rss
-            .await
-            .expect("failed to get feed");
+        let feed = client.get_feed(url).await.expect("failed to get feed");
         dbg!(feed);
     }
 }
