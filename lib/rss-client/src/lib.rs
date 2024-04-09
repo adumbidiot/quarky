@@ -72,11 +72,11 @@ mod tests {
 
     #[tokio::test]
     async fn it_works() {
+        // https://nitter.privacydev.net/dog_rates/media/rss
+        // https://nitter.poast.org/dog_rates/rss
+        let url = "https://nitter.poast.org/dog_rates/rss";
         let client = Client::new();
-        let feed = client
-            .get_feed("https://nitter.privacydev.net/dog_rates/media/rss") // https://nitter.poast.org/dog_rates/rss
-            .await
-            .expect("failed to get feed");
+        let feed = client.get_feed(url).await.expect("failed to get feed");
         dbg!(feed);
     }
 }
