@@ -6,6 +6,8 @@ pub use self::model::{
 };
 use std::time::Duration;
 
+const USER_AGENT_STR: &str = concat!(env!("CARGO_CRATE_NAME"), "/", env!("CARGO_PKG_VERSION"));
+
 /// Library error type
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -34,6 +36,7 @@ impl Client {
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::builder()
+                .user_agent(USER_AGENT_STR)
                 .connect_timeout(Duration::from_secs(10))
                 .build()
                 .expect("failed to build client"),
