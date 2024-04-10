@@ -1,4 +1,8 @@
-use crate::RedditClientKey;
+use crate::{
+    CommandContext,
+    RedditClientKey,
+};
+use anyhow::Context;
 use indexmap::IndexMap;
 use log::{
     info,
@@ -9,16 +13,7 @@ use reddit::{
     Link,
     PostHint,
 };
-use serenity::{
-    client::Context,
-    framework::standard::{
-        macros::command,
-        Args,
-        CommandResult,
-    },
-    model::channel::Message,
-    prelude::RwLock,
-};
+use serenity::prelude::RwLock;
 use std::{
     collections::HashMap,
     sync::{
@@ -140,37 +135,37 @@ impl RedditClient {
     }
 }
 
-#[command]
-#[description("Get a random post from a subreddit")]
-#[bucket("simple")]
-#[min_args(1)]
-async fn reddit(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let subreddit = args.single::<String>().unwrap();
-
+/// Get a random post from a subreddit
+#[poise::command(slash_command)]
+pub async fn reddit(
+    ctx: CommandContext<'_>,
+    #[description = "the subreddit to get an image from"] subreddit: String,
+) -> anyhow::Result<()> {
     let blacklist = ["gayporn"];
     if blacklist.contains(&subreddit.as_str()) {
-        msg.channel_id
-            .say(&ctx.http, "*Angry Barking Noises*")
-            .await?;
+        ctx.say("*Angry Barking Noises*").await?;
         return Ok(());
     }
 
-    let data_lock = ctx.data.read().await;
-    let client = data_lock.get::<RedditClientKey>().unwrap();
+    let data_lock = ctx.serenity_context().data.read().await;
+    let client = data_lock.get::<RedditClientKey>().unwrap().clone();
+    drop(data_lock);
 
-    match client.get_random_post(&subreddit).await {
+    ctx.defer().await?;
+
+    match client
+        .get_random_post(&subreddit)
+        .await
+        .context("failed to fetch posts")
+    {
         Ok(Some(post)) => {
-            msg.channel_id.say(&ctx.http, &*post.url).await?;
+            ctx.say(&*post.url).await?;
         }
         Ok(None) => {
-            msg.channel_id
-                .say(&ctx.http, "Error: No Image Posts found")
-                .await?;
+            ctx.say("Error: No Image Posts found").await?;
         }
-        Err(e) => {
-            msg.channel_id
-                .say(&ctx.http, format!("Failed fetching posts: {e}"))
-                .await?;
+        Err(error) => {
+            ctx.say(format!("{error:?}")).await?;
         }
     }
 

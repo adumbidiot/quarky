@@ -1,32 +1,22 @@
+use crate::CommandContext;
 use log::warn;
-use serenity::{
-    client::Context,
-    framework::standard::{
-        macros::command,
-        Args,
-        CommandResult,
-    },
-    model::channel::Message,
-};
 
-#[command]
-#[bucket("voice")]
-async fn leave(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+/// Leave a voice channel
+#[poise::command(slash_command)]
+pub async fn leave(ctx: CommandContext<'_>) -> anyhow::Result<()> {
     let maybe_guild_id = ctx
-        .cache
-        .channel(msg.channel_id)
+        .cache()
+        .channel(ctx.channel_id())
         .map(|channel| channel.guild_id);
     let guild_id = match maybe_guild_id {
         Some(guild_id) => guild_id,
         None => {
-            msg.channel_id
-                .say(&ctx.http, "Groups and DMs not supported")
-                .await?;
+            ctx.say("Groups and DMs are not supported").await?;
             return Ok(());
         }
     };
 
-    let manager = songbird::get(ctx)
+    let manager = songbird::get(ctx.serenity_context())
         .await
         .expect("Songbird Voice client placed in at initialisation.")
         .clone();
@@ -41,9 +31,9 @@ async fn leave(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
             warn!("Failed to remove voice channel: {}", e);
         }
 
-        msg.channel_id.say(&ctx.http, "Left voice channel").await?;
+        ctx.say("Left voice channel").await?;
     } else {
-        msg.reply(&ctx.http, "Not in a voice channel").await?;
+        ctx.say("Not in a voice channel").await?;
     }
 
     Ok(())

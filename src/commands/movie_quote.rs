@@ -1,17 +1,10 @@
+use crate::CommandContext;
+use anyhow::Context;
 use lazy_static::lazy_static;
 use log::info;
 use rand::{
     seq::SliceRandom,
     Rng,
-};
-use serenity::{
-    client::Context,
-    framework::standard::{
-        macros::command,
-        Args,
-        CommandResult,
-    },
-    model::channel::Message,
 };
 
 // Note: The Corpus is untouched aside from me removing non-utf8 bytes and converting the line endings to LF
@@ -59,9 +52,9 @@ lazy_static! {
     };
 }
 
-#[command]
-#[description = "Respond with a random movie quote"]
-pub async fn movie_quote(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
+/// Respond with a random movie quote
+#[poise::command(slash_command)]
+pub async fn movie_quote(ctx: CommandContext<'_>) -> anyhow::Result<()> {
     let corpus_choice;
     let memorable_quote;
     let quote_pair;
@@ -79,35 +72,33 @@ pub async fn movie_quote(ctx: &Context, msg: &Message, _args: Args) -> CommandRe
 
     match corpus_choice {
         0 => {
-            let quote = match memorable_quote {
-                Some(el) => el,
-                None => {
-                    msg.channel_id
-                        .say(&ctx.http, "Error: Failed to load Memorable Quote Corpus")
-                        .await?;
+            let quote = match memorable_quote.context("failed to load Memorable Quote Corpus") {
+                Ok(el) => el,
+                Err(error) => {
+                    ctx.say(format!("{error:?}")).await?;
                     return Ok(());
                 }
             };
-            let res = format!("{}\n\t-{}", quote.quote, quote.movie);
-            msg.channel_id.say(&ctx.http, &res).await?;
+            let response = format!("{}\n\t-{}", quote.quote, quote.movie);
+            ctx.say(&response).await?;
         }
-        1 => match quote_pair {
-            Some(quote) => {
-                let quote_data = if use_memorable {
-                    quote.memorable_quote.quote
-                } else {
-                    quote.nonmemorable_quote.quote
-                };
-                let res = format!("{}\n\t-{}", quote_data, quote.movie);
-                msg.channel_id.say(&ctx.http, &res).await?;
-            }
-            None => {
-                msg.channel_id
-                    .say(&ctx.http, "Error: Failed to load Quote Pair Corpus")
-                    .await?;
-                return Ok(());
-            }
-        },
+        1 => {
+            let quote = match quote_pair.context("failed to load Quote Pair Corpus") {
+                Ok(quote) => quote,
+                Err(error) => {
+                    ctx.say(format!("{error:?}")).await?;
+                    return Ok(());
+                }
+            };
+
+            let quote_data = if use_memorable {
+                quote.memorable_quote.quote
+            } else {
+                quote.nonmemorable_quote.quote
+            };
+            let response = format!("{}\n\t-{}", quote_data, quote.movie);
+            ctx.say(&response).await?;
+        }
         _ => unreachable!("Invalid num generated!"),
     }
 

@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 mod cli_options;
 mod commands;
 mod config;
@@ -32,21 +30,6 @@ use log::{
 };
 use rand::Rng;
 use serenity::{
-    framework::standard::{
-        buckets::BucketBuilder,
-        help_commands,
-        macros::{
-            group,
-            help,
-        },
-        Args,
-        CommandGroup,
-        CommandResult,
-        Configuration as StandardFrameworkConfiguration,
-        DispatchError,
-        HelpOptions,
-        StandardFramework,
-    },
     gateway::ActivityData,
     model::{
         channel::{
@@ -54,58 +37,23 @@ use serenity::{
             Message,
         },
         gateway::Ready,
-        id::UserId,
         voice::VoiceState,
     },
     prelude::*,
 };
 use songbird::SerenityInit;
 use std::{
-    collections::HashSet,
     sync::Arc,
     time::Duration,
 };
 use tokio::sync::Notify;
 
-#[group]
-#[commands(
-    ping,
-    announce,
-    reddit,
-    movie_quote,
-    zalgo,
-    vaporwave,
-    invite,
-    join,
-    leave,
-    play,
-    stop,
-    random_tweet
-)]
-struct General;
-
-#[help]
-async fn help(
-    context: &Context,
-    msg: &Message,
-    args: Args,
-    help_options: &'static HelpOptions,
-    groups: &[&'static CommandGroup],
-    owners: HashSet<UserId>,
-) -> CommandResult {
-    if let Err(error) = help_commands::with_embeds(context, msg, args, help_options, groups, owners)
-        .await
-        .context("failed to send help")
-    {
-        error!("{error:?}");
-    }
-    Ok(())
-}
+pub type CommandContext<'a> = poise::Context<'a, (), anyhow::Error>;
 
 struct RedditClientKey;
 
 impl TypeMapKey for RedditClientKey {
-    type Value = RedditClient;
+    type Value = Arc<RedditClient>;
 }
 
 struct RssClientKey;
@@ -247,87 +195,41 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
     info!("Using prefix \"{}\"", config.prefix);
 
     // Init Framework
-    let standard_framework_configuration =
-        StandardFrameworkConfiguration::new().prefix(&config.prefix);
-
-    let framework = StandardFramework::new();
-    framework.configure(standard_framework_configuration);
-    let framework = framework
-        .group(&GENERAL_GROUP)
-        .help(&HELP)
-        .on_dispatch_error(|ctx, msg, error, cmd_name| {
+    let framework = poise::Framework::builder()
+        .options(poise::FrameworkOptions {
+            commands: vec![
+                zalgo(),
+                help(),
+                vaporwave(),
+                stop(),
+                reddit(),
+                random_tweet(),
+                play(),
+                ping(),
+                movie_quote(),
+                leave(),
+                join(),
+                invite(),
+                announce(),
+            ],
+            ..Default::default()
+        })
+        .setup(|ctx, _ready, framework| {
             Box::pin(async move {
-                match error {
-                    DispatchError::Ratelimited(duration) => {
-                        if let Err(error) = msg
-                            .channel_id
-                            .say(
-                                &ctx.http,
-                                format!(
-                                    "Try this again in {} second(s).",
-                                    duration.rate_limit.as_secs_f32()
-                                ),
-                            )
-                            .await
-                        {
-                            warn!("Failed to send ratelimited warning message: {error}");
-                        }
-                    }
-                    DispatchError::CommandDisabled => {
-                        if let Err(error) = msg
-                            .channel_id
-                            .say(&ctx.http, format!("Command \"{cmd_name}\" disabled."))
-                            .await
-                        {
-                            warn!("Failed to send disabled command warning message: {error}");
-                        }
-                    }
-                    DispatchError::NotEnoughArguments { min, given } => {
-                        if let Err(error) = msg
-                            .channel_id
-                            .say(
-                                &ctx.http,
-                                format!("Need {min} arguments but only got {given}"),
-                            )
-                            .await
-                        {
-                            warn!("Failed to send not enough args warning message: {error}");
-                        }
-                    }
-                    DispatchError::TooManyArguments { max, given } => {
-                        if let Err(error) = msg
-                            .channel_id
-                            .say(
-                                &ctx.http,
-                                format!("Need only {max} arguments but got {given}"),
-                            )
-                            .await
-                        {
-                            warn!("Failed to send too many args warning message: {error}");
-                        }
-                    }
-                    _ => {
-                        warn!("DispatchError: {:?} | {}", error, msg.content);
-                    }
-                }
+                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                Ok(())
             })
         })
-        .bucket("simple", BucketBuilder::default().delay(1))
+        .build();
+
+    let mut client = Client::builder(&config.token, GatewayIntents::non_privileged())
+        .event_handler(Handler)
+        .framework(framework)
+        .register_songbird()
         .await
-        .bucket("voice", BucketBuilder::default().delay(1))
-        .await;
+        .context("failed to build client")?;
 
-    let mut client = Client::builder(
-        &config.token,
-        GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT,
-    )
-    .event_handler(Handler)
-    .framework(framework)
-    .register_songbird()
-    .await
-    .context("failed to build client")?;
-
-    let reddit_client = RedditClient::new();
+    let reddit_client = Arc::new(RedditClient::new());
     let rss_client = rss_client::Client::new();
     {
         let mut client_data = client.data.write().await;
