@@ -224,7 +224,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
 
     let mut client = Client::builder(
         &config.token,
-        GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT,
+        GatewayIntents::non_privileged(),
     )
     .event_handler(Handler)
     .framework(framework)
