@@ -1,4 +1,7 @@
-use crate::RssClientKey;
+use crate::{
+    CommandContext,
+    RssClientKey,
+};
 use anyhow::Context as _;
 use log::warn;
 use rand::{
@@ -6,15 +9,6 @@ use rand::{
     rngs::OsRng,
 };
 use rss_client::RssFeed;
-use serenity::{
-    client::Context,
-    framework::standard::{
-        macros::command,
-        Args,
-        CommandResult,
-    },
-    model::channel::Message,
-};
 use std::{
     future::Future,
     time::Duration,
@@ -97,30 +91,35 @@ pub async fn get_random_tweet_url(
     Ok(url)
 }
 
-#[command("random-tweet")]
-#[description = "Get a random tweet for a user"]
-#[min_args(1)]
-#[max_args(1)]
-pub async fn random_tweet(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let user = args.single::<String>().unwrap();
-    let rss_client = ctx.data.read().await.get::<RssClientKey>().unwrap().clone();
+/// Get a random tweet for a user
+#[poise::command(slash_command)]
+pub async fn random_tweet(
+    ctx: CommandContext<'_>,
+    #[description = "The user"] user: String,
+) -> anyhow::Result<()> {
+    let rss_client = ctx
+        .serenity_context()
+        .data
+        .read()
+        .await
+        .get::<RssClientKey>()
+        .unwrap()
+        .clone();
 
-    match get_random_tweet_url(&rss_client, &user).await {
-        Ok(Some(url)) => {
-            msg.channel_id.say(&ctx.http, url).await?;
-        }
-        Ok(None) => {
-            warn!("No tweets retrieved for \"{user}\"");
-            msg.channel_id
-                .say(&ctx.http, format!("No tweets retrieved for \"{user}\""))
-                .await?;
-            return Ok(());
+    ctx.defer().await?;
+
+    match get_random_tweet_url(&rss_client, &user)
+        .await
+        .with_context(|| format!("failed to get random tweet for \"{user}\""))
+        .and_then(|maybe_url| {
+            maybe_url.with_context(|| format!("no tweets retrieved for \"{user}\""))
+        }) {
+        Ok(url) => {
+            ctx.say(url).await?;
         }
         Err(error) => {
-            msg.channel_id
-                .say(&ctx.http, format!("Twitter Api Error: {error:?}"))
-                .await?;
-            warn!("Failed to get random tweet for \"{user}\": {error:?}");
+            warn!("{error:?}");
+            ctx.say(format!("{error:?}")).await?;
             return Ok(());
         }
     }

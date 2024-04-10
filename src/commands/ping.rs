@@ -1,16 +1,8 @@
-use serenity::{
-    client::Context,
-    framework::standard::{
-        macros::command,
-        Args,
-        CommandResult,
-    },
-    model::channel::Message,
-};
+use crate::CommandContext;
 
-#[command]
-#[description = "Respond with pong"]
-pub async fn ping(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    msg.channel_id.say(&ctx.http, "pong").await?;
+/// Respond with pong
+#[poise::command(slash_command)]
+pub async fn ping(ctx: CommandContext<'_>) -> anyhow::Result<()> {
+    ctx.say("pong").await?;
     Ok(())
 }

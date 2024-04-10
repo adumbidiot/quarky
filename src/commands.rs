@@ -1,4 +1,5 @@
 pub mod announce;
+pub mod help;
 pub mod invite;
 pub mod join;
 pub mod leave;
@@ -12,16 +13,17 @@ pub mod vaporwave;
 pub mod zalgo;
 
 pub use crate::commands::{
-    announce::ANNOUNCE_COMMAND,
-    invite::INVITE_COMMAND,
-    join::JOIN_COMMAND,
-    leave::LEAVE_COMMAND,
-    movie_quote::MOVIE_QUOTE_COMMAND,
-    ping::PING_COMMAND,
-    play::PLAY_COMMAND,
-    random_tweet::RANDOM_TWEET_COMMAND,
-    reddit::REDDIT_COMMAND,
-    stop::STOP_COMMAND,
-    vaporwave::VAPORWAVE_COMMAND,
-    zalgo::ZALGO_COMMAND,
+    announce::announce,
+    help::help,
+    invite::invite,
+    join::join,
+    leave::leave,
+    movie_quote::movie_quote,
+    ping::ping,
+    play::play,
+    random_tweet::random_tweet,
+    reddit::reddit,
+    stop::stop,
+    vaporwave::vaporwave,
+    zalgo::zalgo,
 };

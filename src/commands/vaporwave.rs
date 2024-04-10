@@ -1,27 +1,4 @@
-use serenity::{
-    client::Context,
-    framework::standard::{
-        macros::command,
-        Args,
-        CommandResult,
-    },
-    model::channel::Message,
-};
-
-#[command]
-#[description("Vaporwave a phrase")]
-#[usage("\"<phrase>\"")]
-#[example("\"Hello World!\"")]
-#[min_args(1)]
-#[max_args(1)]
-pub async fn vaporwave(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let phrase = args.single_quoted::<String>()?;
-    let _ = msg
-        .channel_id
-        .say(&ctx.http, vaporwave_str(&phrase))
-        .await?;
-    Ok(())
-}
+use crate::CommandContext;
 
 pub fn vaporwave_str(data: &str) -> String {
     data.chars()
@@ -34,4 +11,16 @@ pub fn vaporwave_str(data: &str) -> String {
             }
         })
         .collect()
+}
+
+/// Vaporwave a phrase
+#[poise::command(slash_command)]
+pub async fn vaporwave(
+    ctx: CommandContext<'_>,
+    #[description = "The text to vaporwave"] text: String,
+) -> anyhow::Result<()> {
+    let text = vaporwave_str(&text);
+    ctx.say(text).await?;
+
+    Ok(())
 }

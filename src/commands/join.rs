@@ -1,24 +1,16 @@
+use crate::CommandContext;
 use anyhow::Context as _;
 use log::error;
-use serenity::{
-    client::Context,
-    framework::standard::{
-        macros::command,
-        Args,
-        CommandResult,
-    },
-    model::channel::Message,
-    prelude::Mentionable,
-};
+use serenity::prelude::Mentionable;
 
-#[command]
-#[bucket("voice")]
-async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    let (maybe_guild_id, maybe_channel_id) = match msg.guild(&ctx.cache) {
+/// Join a voice channel
+#[poise::command(slash_command)]
+pub async fn join(ctx: CommandContext<'_>) -> anyhow::Result<()> {
+    let (maybe_guild_id, maybe_channel_id) = match ctx.guild() {
         Some(guild) => {
             let maybe_channel_id = guild
                 .voice_states
-                .get(&msg.author.id)
+                .get(&ctx.author().id)
                 .and_then(|voice_state| voice_state.channel_id);
             (Some(guild.id), maybe_channel_id)
         }
@@ -28,9 +20,7 @@ async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let guild_id = match maybe_guild_id {
         Some(guild_id) => guild_id,
         None => {
-            msg.channel_id
-                .say(&ctx.http, "Groups and DMs not supported")
-                .await?;
+            ctx.say("Groups and DMs not supported").await?;
             return Ok(());
         }
     };
@@ -38,12 +28,12 @@ async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let connect_to = match maybe_channel_id {
         Some(channel) => channel,
         None => {
-            msg.reply(&ctx.http, "Not in a voice channel").await?;
+            ctx.say("Not in a voice channel").await?;
             return Ok(());
         }
     };
 
-    let manager = songbird::get(ctx)
+    let manager = songbird::get(ctx.serenity_context())
         .await
         .expect("missing songbird voice client")
         .clone();
@@ -55,15 +45,13 @@ async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     {
         Ok(call) => call,
         Err(error) => {
-            error!("{error}");
-            msg.channel_id.say(&ctx.http, format!("{error}")).await?;
+            error!("{error:?}");
+            ctx.say(format!("{error:?}")).await?;
             return Ok(());
         }
     };
 
-    msg.channel_id
-        .say(&ctx.http, format!("Joined {}", connect_to.mention()))
-        .await?;
+    ctx.say(format!("Joined {}", connect_to.mention())).await?;
 
     Ok(())
 }

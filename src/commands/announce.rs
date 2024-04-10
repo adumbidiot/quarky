@@ -1,32 +1,69 @@
+use crate::CommandContext;
 use log::{
     info,
     warn,
 };
 use serenity::{
     cache::Cache,
-    client::Context,
-    framework::standard::{
-        macros::command,
-        Args,
-        CommandResult,
-    },
     http::Http,
-    model::channel::{
-        ChannelType,
-        Message,
-    },
+    model::channel::ChannelType,
 };
 
+/*
 #[command]
-#[description("Broadcast a message to robotics members")]
 #[allowed_roles("bot")] //TODO: Admin only
-#[usage("\"<announcement>\"")]
-#[min_args(1)]
-#[max_args(1)]
-#[example("\"Hello! This is an announcement!\"")]
 pub async fn announce(ctx: &Context, _msg: &Message, mut args: Args) -> CommandResult {
     let announcement = args.single_quoted::<String>()?;
     announce_discord(&ctx.http, &ctx.cache, &announcement).await;
+    Ok(())
+}
+*/
+
+async fn has_bot_role(ctx: CommandContext<'_>) -> anyhow::Result<bool> {
+    let (guild_id, role_id) = {
+        let guild = match ctx.guild() {
+            Some(guild) => guild,
+            None => {
+                return Ok(false);
+            }
+        };
+
+        let role_id = guild.roles.iter().find_map(|(id, role)| {
+            if role.name != "bot" {
+                return None;
+            }
+
+            Some(*id)
+        });
+
+        let role_id = match role_id {
+            Some(role_id) => role_id,
+            None => {
+                return Ok(false);
+            }
+        };
+
+        (guild.id, role_id)
+    };
+
+    let has_role = ctx.author().has_role(ctx.http(), guild_id, role_id).await?;
+
+    Ok(has_role)
+}
+
+/// Broadcast a message to robotics members
+#[poise::command(slash_command, check = "has_bot_role")]
+pub async fn announce(
+    ctx: CommandContext<'_>,
+    #[description = "The announcement"] announcement: String,
+) -> anyhow::Result<()> {
+    let serenity_context = ctx.serenity_context();
+    announce_discord(
+        &serenity_context.http,
+        &serenity_context.cache,
+        &announcement,
+    )
+    .await;
     Ok(())
 }
 
