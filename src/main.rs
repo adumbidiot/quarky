@@ -192,8 +192,6 @@ fn main() -> anyhow::Result<()> {
 }
 
 async fn async_main(config: Config) -> anyhow::Result<()> {
-    info!("Using prefix \"{}\"", config.prefix);
-
     // Init Framework
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {

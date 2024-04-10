@@ -8,9 +8,6 @@ use serde::Deserialize;
 /// The bot config
 #[derive(Deserialize, Debug)]
 pub struct Config {
-    /// The bot prefix
-    pub prefix: String,
-
     /// The bot token
     pub token: String,
 
