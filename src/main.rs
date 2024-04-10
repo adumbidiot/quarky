@@ -222,15 +222,12 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
         })
         .build();
 
-    let mut client = Client::builder(
-        &config.token,
-        GatewayIntents::non_privileged(),
-    )
-    .event_handler(Handler)
-    .framework(framework)
-    .register_songbird()
-    .await
-    .context("failed to build client")?;
+    let mut client = Client::builder(&config.token, GatewayIntents::non_privileged())
+        .event_handler(Handler)
+        .framework(framework)
+        .register_songbird()
+        .await
+        .context("failed to build client")?;
 
     let reddit_client = Arc::new(RedditClient::new());
     let rss_client = rss_client::Client::new();
