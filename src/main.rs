@@ -62,6 +62,12 @@ impl TypeMapKey for RssClientKey {
     type Value = rss_client::Client;
 }
 
+struct ReqwestClientKey;
+
+impl TypeMapKey for ReqwestClientKey {
+    type Value = reqwest::Client;
+}
+
 struct Handler;
 
 #[serenity::async_trait]
@@ -229,11 +235,13 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
 
     let reddit_client = Arc::new(RedditClient::new());
     let rss_client = rss_client::Client::new();
+    let reqwest_client = reqwest::Client::new();
     {
         let mut client_data = client.data.write().await;
 
         client_data.insert::<RedditClientKey>(reddit_client);
         client_data.insert::<RssClientKey>(rss_client);
+        client_data.insert::<ReqwestClientKey>(reqwest_client);
     }
 
     // Start Scheduler

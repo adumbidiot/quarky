@@ -41,8 +41,11 @@ pub enum Error {
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    //use super::*;
 
+    // Twitter seems to have broken this endpoint.
+    // Check out later to see if it can be fixed.
+    /*
     #[tokio::test]
     async fn get_user_tweets() {
         let client = Client::new();
@@ -60,6 +63,7 @@ mod test {
             .expect("failed to get user tweets");
         dbg!(user_tweets.data);
     }
+    */
 
     // Twitter seems to have removed this endpoint.
     // Keep it around for a bit in case they change their minds.
