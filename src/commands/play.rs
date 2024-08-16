@@ -1,6 +1,6 @@
 use crate::{
     CommandContext,
-    RedditClientKey,
+    ReqwestClientKey,
 };
 use songbird::input::YoutubeDl;
 
@@ -12,15 +12,12 @@ pub async fn play(
 ) -> anyhow::Result<()> {
     let serenity_context = ctx.serenity_context();
 
-    // Piggy back off of reddit client
     let client = serenity_context
         .data
         .read()
         .await
-        .get::<RedditClientKey>()
+        .get::<ReqwestClientKey>()
         .unwrap()
-        .client
-        .client
         .clone();
 
     // Validation
@@ -29,10 +26,7 @@ pub async fn play(
         return Ok(());
     }
 
-    let maybe_guild_id = ctx
-        .cache()
-        .channel(ctx.channel_id())
-        .map(|channel| channel.guild_id);
+    let maybe_guild_id = ctx.guild_id();
     let guild_id = match maybe_guild_id {
         Some(guild_id) => guild_id,
         None => {

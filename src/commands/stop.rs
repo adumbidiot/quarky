@@ -3,10 +3,7 @@ use crate::CommandContext;
 /// Stop playing audio
 #[poise::command(slash_command)]
 pub async fn stop(ctx: CommandContext<'_>) -> anyhow::Result<()> {
-    let maybe_guild_id = ctx
-        .cache()
-        .channel(ctx.channel_id())
-        .map(|channel| channel.guild_id);
+    let maybe_guild_id = ctx.guild_id();
 
     let guild_id = match maybe_guild_id {
         Some(guild_id) => guild_id,
