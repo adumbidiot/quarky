@@ -4,10 +4,12 @@ version = "0.0.2"
 authors = [ "adumbidiot <nathaniel.daniel23@outlook.com>" ]
 edition = "2021"
 publish = false
+license = "MIT"
 
 [dependencies]
 anyhow = "1.0.86"
 argh = "0.1.12"
+audiopus_sys = { version = "0.2.2", default-features = false }
 camino = { version = "1.1.8", features = [ "serde1" ] }
 # clokwerk = "0.4.0"
 clokwerk = { git = "https://github.com/mdsherry/clokwerk" }
@@ -31,6 +33,12 @@ toml = "0.8.19"
 zalgo = { git = "https://github.com/adumbidiot/zalgo-rs" }
 poise = "0.6.1"
 
+[features]
+default = []
+pkg-config = [
+    "audiopus_sys/pkg-config",
+]
+
 [profile.release]
 lto = "fat"
 codegen-units = 1
@@ -40,6 +48,7 @@ debug-assertions = false
 strip = "symbols"
 
 [patch.crates-io]
+audiopus_sys = { git = "https://github.com/adumbidiot/audiopus_sys", branch = "pkg-config" }
 
 [workspace]
 members = [
@@ -48,7 +57,7 @@ members = [
 
 [package.metadata.deb]
 name = "quarky"
-depends = ""
+depends = [ "libopus0", "yt-dlp" ]
 assets = [
     [ "target/release/quarky", "usr/bin/", "700" ],
     [ "deb-config.toml", "etc/quarky/config.toml", "600" ],
@@ -61,8 +70,3 @@ maintainer-scripts = "debian/"
 [package.metadata.deb.systemd-units]
 enable = false
 start = false
-
-[package.metadata.rpi-deploy]
-targets = [
-    "aarch64-unknown-linux-gnu",
-]

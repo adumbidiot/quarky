@@ -120,8 +120,7 @@ dependencies = [
 [[package]]
 name = "audiopus_sys"
 version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62314a1546a2064e033665d658e88c620a62904be945f8147e6b16c3db9f8651"
+source = "git+https://github.com/adumbidiot/audiopus_sys?branch=pkg-config#7a79e9bd0f7af8b992de09a8463c85ac304411fc"
 dependencies = [
  "cmake",
  "log",
@@ -1587,6 +1586,7 @@ version = "0.0.2"
 dependencies = [
  "anyhow",
  "argh",
+ "audiopus_sys",
  "camino",
  "chrono",
  "clokwerk",
