@@ -9,6 +9,6 @@ HOST = dagger.local
 .PHONY: deploy
 
 deploy:
-	debian-sysroot-build --target ${TARGET} --package ${PACKAGE} --install-package libc6 --install-package libc6-dev --install-package linux-libc-dev --install-package libgcc-12-dev
+	debian-sysroot-build --target ${TARGET} --package ${PACKAGE} --features pkg-config --install-package libc6 --install-package libc6-dev --install-package linux-libc-dev --install-package libgcc-12-dev --install-package libopus-dev
 	cargo deb --target ${TARGET} --no-build --no-strip
 	deploy-deb target/${TARGET}/debian/${DEB_NAME} ${HOST}
