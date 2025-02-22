@@ -7,7 +7,15 @@ targets = [
 ]
 
 [advisories]
-ignore = []
+ignore = [
+    # Figure out how to deal with this.
+    # We want cross compilation,
+    # but nothing is as good as ring.
+    "RUSTSEC-2025-0007",
+    
+    # Wait for serenity and songbird to move to a new library
+    "RUSTSEC-2024-0388",
+]
 
 [licenses]
 confidence-threshold = 0.93
@@ -34,10 +42,7 @@ license-files = [
 [bans]
 multiple-versions = "warn"
 highlight = "all"
-skip = [	        
-    # Blocked on `crossbeam-utils` bumping `cfg-if` to `1.0.x`
-    { name = "cfg-if", version = "1.0.0" },
-    
+skip = [    
     # Blocked on serenity updating "syn"
     { name = "syn", version = "1.0.109" },
     
@@ -57,7 +62,6 @@ skip = [
     { name = "windows_x86_64_gnu", version = "0.48.5" },
     { name = "windows-targets", version = "0.48.5" },
     { name = "windows-sys", version = "0.48.0" },
-    { name = "winreg", version = "0.50.0" },
     { name = "windows-sys", version = "0.52.0" },
     { name = "tokio-rustls", version = "0.25.0" },
     { name = "sync_wrapper", version = "0.1.2" },
