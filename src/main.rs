@@ -73,7 +73,7 @@ struct Handler;
 #[serenity::async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
-        let random_number: u8 = rand::thread_rng().gen_range(0..2);
+        let random_number: u8 = rand::rng().random_range(0..2);
         match random_number {
             0 => {
                 ctx.set_activity(Some(ActivityData::playing("with my tail")));

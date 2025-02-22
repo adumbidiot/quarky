@@ -3,7 +3,7 @@ use anyhow::Context;
 use lazy_static::lazy_static;
 use log::info;
 use rand::{
-    seq::SliceRandom,
+    prelude::IndexedRandom,
     Rng,
 };
 
@@ -60,14 +60,14 @@ pub async fn movie_quote(ctx: CommandContext<'_>) -> anyhow::Result<()> {
     let quote_pair;
     let use_memorable;
     {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
-        corpus_choice = rng.gen_range(0u8..2);
+        corpus_choice = rng.random_range(0u8..2);
 
         memorable_quote = MEMORABLE_QUOTES.choose(&mut rng);
         quote_pair = QUOTE_PAIRS.choose(&mut rng);
 
-        use_memorable = rng.gen();
+        use_memorable = rng.random();
     }
 
     match corpus_choice {

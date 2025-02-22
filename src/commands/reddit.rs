@@ -56,8 +56,8 @@ impl EntryCache {
             return None;
         }
 
-        let mut rng = rand::thread_rng();
-        let index = rng.gen_range(0..store_len);
+        let mut rng = rand::rng();
+        let index = rng.random_range(0..store_len);
 
         store.get_index(index).map(|(_, v)| v).cloned()
     }
