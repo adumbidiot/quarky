@@ -21,12 +21,12 @@ lazy_static = "1.5.0"
 log = "0.4.22"
 rand = "0.8.5"
 reddit = { git = "https://github.com/adumbidiot/reddit-rs", default-features = false, features = [ "rustls-tls" ] }
-reqwest = { version = "0.12.9", default-features = false, features = [ "rustls-tls" ] }
+reqwest = { version = "0.12.12", default-features = false, features = [ "rustls-tls" ] }
 rss-client = { path = "lib/rss-client", default-features = false, features = [ "rustls-tls" ] }
 serde = { version = "1.0.208", features = [ "derive" ] }
 serde_json = "1.0.125"
 serenity = "0.12.4"
-songbird = "=0.4.5"
+songbird = "0.5.0"
 thiserror = "1.0.63"
 tokio = { version = "1.41.1", features = [ "rt-multi-thread", "signal" ] }
 toml = "0.8.19"
