@@ -4,10 +4,7 @@ use crate::{
 };
 use anyhow::Context as _;
 use log::warn;
-use rand::{
-    prelude::SliceRandom,
-    rngs::OsRng,
-};
+use rand::prelude::IndexedRandom;
 use rss_client::RssFeed;
 use std::{
     future::Future,
@@ -85,7 +82,7 @@ pub async fn get_random_tweet_url(
     // Twitter embeds broke as of 10/10/2023.
     // Use https://github.com/FixTweet/FixTweet instead for embedding.
     let url = entries
-        .choose(&mut OsRng)
+        .choose(&mut rand::rng())
         .map(|tweet_id| format!("https://fxtwitter.com/{user}/status/{tweet_id}"));
 
     Ok(url)
