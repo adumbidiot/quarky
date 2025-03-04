@@ -13,7 +13,7 @@ audiopus_sys = { version = "0.2.2", default-features = false }
 camino = { version = "1.1.9", features = [ "serde1" ] }
 # clokwerk = "0.4.0"
 clokwerk = { git = "https://github.com/mdsherry/clokwerk" }
-chrono = { version = "0.4.38", default-features = false }
+chrono = { version = "0.4.40", default-features = false }
 fern = { version = "0.7.0", features = [ "colored" ] }
 http = "1.1.0"
 indexmap = "2.7.0"
