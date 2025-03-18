@@ -19,6 +19,7 @@ http = "1.1.0"
 indexmap = "2.7.0"
 lazy_static = "1.5.0"
 log = "0.4.22"
+nitter = { path = "lib/nitter", features = [ "rustls-tls" ], default-features = false}
 rand = "0.9.0"
 reddit = { git = "https://github.com/adumbidiot/reddit-rs", default-features = false, features = [ "rustls-tls" ] }
 # This should match the version used by songbird.
