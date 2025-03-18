@@ -2,6 +2,7 @@
 name = "nitter"
 version = "0.0.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 reqwest = { version = "0.12.14", features = [ "http2", "gzip" ], default-features = false }
