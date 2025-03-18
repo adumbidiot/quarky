@@ -62,6 +62,12 @@ impl TypeMapKey for RssClientKey {
     type Value = rss_client::Client;
 }
 
+struct NitterClientKey;
+
+impl TypeMapKey for NitterClientKey {
+    type Value = nitter::Client;
+}
+
 struct ReqwestClientKey;
 
 impl TypeMapKey for ReqwestClientKey {
@@ -148,21 +154,28 @@ async fn schedule_robotics_reminder(
     let msg = msg.to_string();
     let http = client.http.clone();
     let cache = client.cache.clone();
-    let rss_client = client
-        .data
-        .read()
-        .await
-        .get::<RssClientKey>()
-        .cloned()
-        .unwrap();
+    let rss_client;
+    let nitter_client;
+    {
+        let data = client.data.read().await;
+
+        rss_client = data.get::<RssClientKey>().cloned().unwrap();
+        nitter_client = data.get::<NitterClientKey>().cloned().unwrap();
+    }
 
     scheduler.every(day).at(time).run(move || {
         let msg = msg.clone();
         let http = http.clone();
         let cache = cache.clone();
         let rss_client = rss_client.clone();
+        let nitter_client = nitter_client.clone();
         tokio::spawn(async move {
-            let msg = match self::random_tweet::get_random_tweet_url(&rss_client, "dog_rates").await
+            let msg = match self::random_tweet::get_random_tweet_url(
+                &rss_client,
+                &nitter_client,
+                "dog_rates",
+            )
+            .await
             {
                 Ok(Some(link)) => format!("{msg}\n{link}"),
                 Ok(None) => {
@@ -235,12 +248,14 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
 
     let reddit_client = Arc::new(RedditClient::new());
     let rss_client = rss_client::Client::new();
+    let nitter_client = nitter::Client::new();
     let reqwest_client = reqwest::Client::new();
     {
         let mut client_data = client.data.write().await;
 
         client_data.insert::<RedditClientKey>(reddit_client);
         client_data.insert::<RssClientKey>(rss_client);
+        client_data.insert::<NitterClientKey>(nitter_client);
         client_data.insert::<ReqwestClientKey>(reqwest_client);
     }
 

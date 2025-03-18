@@ -8,11 +8,6 @@ targets = [
 
 [advisories]
 ignore = [
-    # Figure out how to deal with this.
-    # We want cross compilation,
-    # but nothing is as good as ring.
-    "RUSTSEC-2025-0007",
-    
     # Wait for serenity and songbird to move to a new library
     "RUSTSEC-2024-0388",
 ]
@@ -68,6 +63,25 @@ skip = [
     { name = "rustls-pemfile", version = "1.0.4" },
     { name = "rustls", version = "0.22.4" },
     { name = "base64", version = "0.21.7" },
+    { name = "windows_x86_64_msvc", version = "0.52.6" },
+    { name = "windows_x86_64_gnu", version = "0.52.6" },
+    { name = "windows-targets", version = "0.52.6" },
+    { name = "tungstenite", version = "0.21.0" },
+    { name = "tokio-tungstenite", version = "0.21.0" },
+    { name = "thiserror-impl", version = "1.0.69" },
+    { name = "thiserror", version = "1.0.69" },
+    { name = "strsim", version = "0.9.3" },
+    { name = "rustls-webpki", version = "0.102.8" },
+    { name = "rand_core", version = "0.6.4" },
+    { name = "rand_chacha", version = "0.3.1" },
+    { name = "rand", version = "0.8.5" },
+    { name = "hashbrown", version = "0.14.5" },
+    { name = "h2", version = "0.3.26" },
+    { name = "getrandom", version = "0.2.15" },
+    { name = "dashmap", version = "5.5.3" },
+    { name = "darling_macro", version = "0.10.2" },
+    { name = "darling_core", version = "0.10.2" },
+    { name = "darling", version = "0.10.2" },
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs
