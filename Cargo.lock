@@ -1508,9 +1508,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.8.0"
+version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3954d50fe15b02142bf25d3b8bdadb634ec3948f103d04ffe3031bc8fe9d7058"
+checksum = "cea70ddb795996207ad57735b50c5982d8844f38ba9ee5f1aedcfb708a2aa11e"
 dependencies = [
  "equivalent",
  "hashbrown 0.15.2",
@@ -1595,9 +1595,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.26"
+version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30bde2b3dc3671ae49d8e2e9f044c7c005836e7a023ee57cffa25ab82764bb9e"
+checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
 
 [[package]]
 name = "loom"
@@ -1747,7 +1747,7 @@ checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 name = "nitter"
 version = "0.0.0"
 dependencies = [
- "reqwest 0.12.14",
+ "reqwest 0.12.15",
  "scraper",
  "thiserror 2.0.12",
  "tokio",
@@ -1835,9 +1835,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.21.1"
+version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d75b0bedcc4fe52caa0e03d9f1151a323e4aa5e2d78ba3580400cd3c9e2bc4bc"
+checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
 name = "opaque-debug"
@@ -2205,7 +2205,7 @@ dependencies = [
  "poise",
  "rand 0.9.0",
  "reddit",
- "reqwest 0.12.14",
+ "reqwest 0.12.15",
  "rss-client",
  "serde",
  "serde_json",
@@ -2219,9 +2219,9 @@ dependencies = [
 
 [[package]]
 name = "quick-xml"
-version = "0.37.2"
+version = "0.37.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "165859e9e55f79d67b96c5d96f4e88b6f2695a1972849c15a6a3f5c59fc2c003"
+checksum = "a4ce8c88de324ff838700f36fb6ab86c96df0e3c4ab6ef3a9b2044465cce1369"
 dependencies = [
  "memchr",
  "serde",
@@ -2366,9 +2366,9 @@ dependencies = [
 [[package]]
 name = "reddit"
 version = "0.0.0"
-source = "git+https://github.com/adumbidiot/reddit-rs#c6c821935e16283751d449b85e3625cba191c972"
+source = "git+https://github.com/adumbidiot/reddit-rs#088995a0316034ae60e39a2b79e4838280434cb1"
 dependencies = [
- "reqwest 0.12.14",
+ "reqwest 0.12.15",
  "serde",
  "serde_json",
  "thiserror 2.0.12",
@@ -2474,9 +2474,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.12.14"
+version = "0.12.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "989e327e510263980e231de548a33e63d34962d29ae61b467389a1a09627a254"
+checksum = "d19c46a6fdd48bc4dab94b6103fccc55d34c67cc0ad04653aad4ea2a07cd7bbb"
 dependencies = [
  "async-compression",
  "base64 0.22.1",
@@ -2532,7 +2532,7 @@ checksum = "a0b36498c7452f11b1833900f31fbb01fc46be20992a50269c88cf59d79f54e9"
 dependencies = [
  "bytes",
  "cookie_store",
- "reqwest 0.12.14",
+ "reqwest 0.12.15",
  "url",
 ]
 
@@ -2565,7 +2565,7 @@ name = "rss-client"
 version = "0.0.0"
 dependencies = [
  "quick-xml",
- "reqwest 0.12.14",
+ "reqwest 0.12.15",
  "serde",
  "thiserror 2.0.12",
  "tokio",
@@ -3186,7 +3186,7 @@ dependencies = [
  "parking_lot",
  "pin-project",
  "rand 0.9.0",
- "reqwest 0.12.14",
+ "reqwest 0.12.15",
  "ringbuf",
  "rubato",
  "rusty_pool",
@@ -3253,7 +3253,7 @@ dependencies = [
  "futures-util",
  "hls_m3u8",
  "patricia_tree",
- "reqwest 0.12.14",
+ "reqwest 0.12.15",
  "tokio",
  "tracing",
  "url",
@@ -3964,7 +3964,7 @@ dependencies = [
  "form_urlencoded",
  "once_cell",
  "regex",
- "reqwest 0.12.14",
+ "reqwest 0.12.15",
  "reqwest_cookie_store",
  "serde",
  "serde_json",
