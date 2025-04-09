@@ -16,9 +16,9 @@ clokwerk = { git = "https://github.com/mdsherry/clokwerk" }
 chrono = { version = "0.4.40", default-features = false }
 fern = { version = "0.7.0", features = [ "colored" ] }
 http = "1.1.0"
-indexmap = "2.7.0"
+indexmap = "2.9.0"
 lazy_static = "1.5.0"
-log = "0.4.22"
+log = "0.4.27"
 nitter = { path = "lib/nitter", features = [ "rustls-tls" ], default-features = false}
 rand = "0.9.0"
 reddit = { git = "https://github.com/adumbidiot/reddit-rs", default-features = false, features = [ "rustls-tls" ] }

@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 cookie_store = "0.21.1"
 form_urlencoded = "1.2.1"
-once_cell = "1.20.2"
+once_cell = "1.21.3"
 regex = "1.11.1"
 reqwest = { version = "0.12.9", default-features = false, features = [ "cookies", "json" ] }
 reqwest_cookie_store = "0.8.0"
