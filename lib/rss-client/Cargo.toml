@@ -5,15 +5,15 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-quick-xml = { version = "0.37.4", features = [ "serialize" ] }
-reqwest = { version = "0.12.9", features = [], default-features = false }
+quick-xml = { version = "0.38.3", features = [ "serialize" ] }
+reqwest = { version = "0.12.23", features = [], default-features = false }
 serde = { version = "1.0.208", features = ["derive"] }
-thiserror = "2.0.11"
-tokio = { version = "1.44.2", features = [ "rt" ] }
+thiserror = "2.0.16"
+tokio = { version = "1.47.1", features = [ "rt" ] }
 url = { version = "2.5.4", features = ["serde"] }
 
 [dev-dependencies]
-tokio = { version = "1.44.2", features = [ "macros" ] }
+tokio = { version = "1.47.1", features = [ "macros" ] }
 
 [features]
 default = [
