@@ -5,13 +5,13 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-reqwest = { version = "0.12.14", features = [ "http2", "gzip" ], default-features = false }
-scraper = { version = "0.23.1", default-features = false }
-thiserror = "2.0.12"
-tokio = "1.44.2"
+reqwest = { version = "0.12.23", features = [ "http2", "gzip" ], default-features = false }
+scraper = { version = "0.24.0", default-features = false }
+thiserror = "2.0.16"
+tokio = "1.47.1"
 
 [dev-dependencies]
-tokio = { version = "1.44.2", features = [ "macros" ] }
+tokio = { version = "1.47.1", features = [ "macros" ] }
 
 [features]
 default = [ "rustls-tls" ]
