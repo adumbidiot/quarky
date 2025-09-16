@@ -10,12 +10,15 @@ targets = [
 ignore = [
     # Wait for serenity and songbird to move to a new library
     "RUSTSEC-2024-0388",
+    
+    # Wait for scrapers to update selectors
+    "RUSTSEC-2025-0057",
 ]
 
 [licenses]
 confidence-threshold = 0.93
 private = { ignore = true }
-allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause", "MPL-2.0", "Unicode-DFS-2016", "Unicode-3.0" ]
+allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause", "MPL-2.0", "Unicode-3.0" ]
 exceptions = [
     { name = "ring", allow = [ "MIT", "ISC", "OpenSSL" ] },
 ]
