@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 reqwest = { version = "0.12.23", features = [ "http2", "gzip" ], default-features = false }
 scraper = { version = "0.24.0", default-features = false }
-thiserror = "2.0.16"
+thiserror = "2.0.17"
 tokio = "1.47.1"
 
 [dev-dependencies]
