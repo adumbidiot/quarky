@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-quick-xml = { version = "0.38.3", features = [ "serialize" ] }
+quick-xml = { version = "0.38.4", features = [ "serialize" ] }
 reqwest = { version = "0.12.24", features = [], default-features = false }
 serde = { version = "1.0.228", features = ["derive"] }
 thiserror = "2.0.17"
