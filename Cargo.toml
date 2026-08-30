@@ -9,7 +9,6 @@ license = "MIT"
 [dependencies]
 anyhow = "1.0.104"
 argh = "0.1.19"
-audiopus_sys = { version = "0.2.2", default-features = false }
 camino = { version = "1.2.5", features = [ "serde1" ] }
 # clokwerk = "0.4.0"
 clokwerk = { git = "https://github.com/mdsherry/clokwerk" }
@@ -31,7 +30,7 @@ rss-client = { path = "lib/rss-client", default-features = false, features = [ "
 serde = { version = "1.0.229", features = [ "derive" ] }
 serde_json = "1.0.151"
 serenity = "0.12.5"
-songbird = "0.6.0"
+songbird = { version = "0.6.0", features = [ "backend-mousiki" ] }
 thiserror = "2.0.20"
 tokio = { version = "1.53.1", features = [ "rt-multi-thread", "signal" ] }
 toml = "1.1.4"
@@ -39,9 +38,6 @@ zalgo = { git = "https://github.com/adumbidiot/zalgo-rs" }
 
 [features]
 default = []
-pkg-config = [
-    "audiopus_sys/pkg-config",
-]
 
 [profile.release]
 lto = "fat"
@@ -52,7 +48,8 @@ debug-assertions = false
 strip = "symbols"
 
 [patch.crates-io]
-audiopus_sys = { git = "https://github.com/adumbidiot/audiopus_sys", branch = "pkg-config" }
+# This allows us to use the pure-rust opus2 backend to make cross-compilation easier.
+songbird = { git = "https://github.com/adumbidiot/songbird", branch = "opus2-backends" }
 
 [workspace]
 members = [
