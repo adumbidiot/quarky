@@ -3,8 +3,8 @@ use anyhow::Context;
 use lazy_static::lazy_static;
 use log::info;
 use rand::{
-    prelude::IndexedRandom,
     RngExt,
+    prelude::IndexedRandom,
 };
 
 // Note: The Corpus is untouched aside from me removing non-utf8 bytes and converting the line endings to LF

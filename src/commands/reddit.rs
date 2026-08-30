@@ -17,11 +17,11 @@ use serenity::prelude::RwLock;
 use std::{
     collections::HashMap,
     sync::{
+        Arc,
         atomic::{
             AtomicUsize,
             Ordering,
         },
-        Arc,
     },
 };
 

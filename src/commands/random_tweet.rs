@@ -69,14 +69,22 @@ async fn get_random_tweet_id_nitter_rss(
     client: &rss_client::Client,
     user: &str,
 ) -> anyhow::Result<Option<String>> {
-    let feed_result = get_nitter_feed(client, "https://nitter.privacydev.net", user).await;
+    let sources = [
+        "https://nitter.cf",
+        "https://nitter.privacydev.net",
+        // Domain seems to have been taken down.
+        // "https://nitter.poast.org",
+    ];
+    let mut result: Option<Result<_, _>> = None;
+    for source in sources {
+        let source_result = get_nitter_feed(client, source, user).await;
+        if result.as_ref().is_none_or(|value| value.is_err()) {
+            result = Some(source_result);
+        }
+    }
+    let result = result.context("Missing url source")??;
 
-    let feed = match feed_result {
-        Ok(feed) => feed,
-        Err(_error) => get_nitter_feed(client, "https://nitter.poast.org", user).await?,
-    };
-
-    let entries: Vec<_> = feed
+    let entries: Vec<_> = result
         .channel
         .item
         .iter()
