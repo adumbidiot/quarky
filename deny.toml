@@ -10,12 +10,24 @@ targets = [
 ignore = [
     # Wait for serenity and songbird to move to a new library
     "RUSTSEC-2024-0388",
+    
+    # Wait for scrapers to update selectors
+    "RUSTSEC-2025-0057",
 ]
 
 [licenses]
 confidence-threshold = 0.93
 private = { ignore = true }
-allow = [ "Apache-2.0", "MIT", "ISC", "Zlib", "BSD-3-Clause", "MPL-2.0", "Unicode-DFS-2016", "Unicode-3.0" ]
+allow = [
+    "Apache-2.0",
+    "MIT", 
+    "ISC", 
+    "Zlib", 
+    "BSD-3-Clause",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "CDLA-Permissive-2.0",
+]
 exceptions = [
     { name = "ring", allow = [ "MIT", "ISC", "OpenSSL" ] },
 ]
@@ -60,7 +72,6 @@ skip = [
     { name = "windows-sys", version = "0.52.0" },
     { name = "tokio-rustls", version = "0.25.0" },
     { name = "sync_wrapper", version = "0.1.2" },
-    { name = "rustls-pemfile", version = "1.0.4" },
     { name = "rustls", version = "0.22.4" },
     { name = "base64", version = "0.21.7" },
     { name = "windows_x86_64_msvc", version = "0.52.6" },
@@ -82,6 +93,9 @@ skip = [
     { name = "darling_macro", version = "0.10.2" },
     { name = "darling_core", version = "0.10.2" },
     { name = "darling", version = "0.10.2" },
+    { name = "webpki-roots", version = "0.26.11" },
+    { name = "socket2", version = "0.5.10" },
+    { name = "derive_more", version = "0.99.20" },
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs
