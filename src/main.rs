@@ -102,7 +102,7 @@ impl EventHandler for Handler {
     async fn message(&self, _ctx: Context, _msg: Message) {}
 
     async fn voice_state_update(&self, ctx: Context, old: Option<VoiceState>, new: VoiceState) {
-        #[allow(clippy::collapsible_match)]
+        #[expect(clippy::collapsible_match, clippy::collapsible_if)]
         if let Some(old_id) = old.and_then(|old| old.channel_id) {
             if new
                 .user_id
@@ -113,7 +113,7 @@ impl EventHandler for Handler {
             {
                 if let Ok(ch) = old_id.to_channel(ctx.http.clone()).await {
                     // I don't think i'm doing this right...
-                    #[allow(clippy::single_match)]
+                    #[expect(clippy::single_match)]
                     match ch {
                         Channel::Guild(channel) => {
                             if let Ok(members) = channel.members(&ctx.cache) {

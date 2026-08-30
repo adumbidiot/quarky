@@ -98,7 +98,7 @@ impl Client {
 
         let url = Url::parse_with_params(
             &format!("https://twitter.com/i/api/graphql/{query_hash}/{name}"),
-            &[
+            [
                 ("variables", variables.as_str()),
                 ("features", features.as_str()),
             ],
