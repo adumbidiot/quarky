@@ -1,11 +1,11 @@
-use crate::CommandContext;
+use crate::PoiseContext;
 use anyhow::Context as _;
 use log::error;
 use serenity::prelude::Mentionable;
 
 /// Join a voice channel
 #[poise::command(slash_command)]
-pub async fn join(ctx: CommandContext<'_>) -> anyhow::Result<()> {
+pub async fn join(ctx: PoiseContext<'_>) -> anyhow::Result<()> {
     let (maybe_guild_id, maybe_channel_id) = match ctx.guild() {
         Some(guild) => {
             let maybe_channel_id = guild

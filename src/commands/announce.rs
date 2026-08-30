@@ -1,4 +1,4 @@
-use crate::CommandContext;
+use crate::PoiseContext;
 use log::{
     info,
     warn,
@@ -19,7 +19,7 @@ pub async fn announce(ctx: &Context, _msg: &Message, mut args: Args) -> CommandR
 }
 */
 
-async fn has_bot_role(ctx: CommandContext<'_>) -> anyhow::Result<bool> {
+async fn has_bot_role(ctx: PoiseContext<'_>) -> anyhow::Result<bool> {
     let (guild_id, role_id) = {
         let guild = match ctx.guild() {
             Some(guild) => guild,
@@ -54,7 +54,7 @@ async fn has_bot_role(ctx: CommandContext<'_>) -> anyhow::Result<bool> {
 /// Broadcast a message to robotics members
 #[poise::command(slash_command, check = "has_bot_role")]
 pub async fn announce(
-    ctx: CommandContext<'_>,
+    ctx: PoiseContext<'_>,
     #[description = "The announcement"] announcement: String,
 ) -> anyhow::Result<()> {
     let serenity_context = ctx.serenity_context();

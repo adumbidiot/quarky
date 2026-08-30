@@ -1,10 +1,10 @@
-use crate::CommandContext;
+use crate::PoiseContext;
 use zalgo::ZalgoBuilder;
 
 /// Zalgoify a phrase
 #[poise::command(slash_command)]
 pub async fn zalgo(
-    ctx: CommandContext<'_>,
+    ctx: PoiseContext<'_>,
     #[description = "The text to zalgoify"] text: String,
     #[description = "The length of the output in chars"] max_len: Option<usize>,
 ) -> anyhow::Result<()> {

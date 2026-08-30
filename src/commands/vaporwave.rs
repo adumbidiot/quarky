@@ -1,4 +1,4 @@
-use crate::CommandContext;
+use crate::PoiseContext;
 
 pub fn vaporwave_str(data: &str) -> String {
     data.chars()
@@ -16,7 +16,7 @@ pub fn vaporwave_str(data: &str) -> String {
 /// Vaporwave a phrase
 #[poise::command(slash_command)]
 pub async fn vaporwave(
-    ctx: CommandContext<'_>,
+    ctx: PoiseContext<'_>,
     #[description = "The text to vaporwave"] text: String,
 ) -> anyhow::Result<()> {
     let text = vaporwave_str(&text);

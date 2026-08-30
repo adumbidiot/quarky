@@ -1,4 +1,4 @@
-use crate::CommandContext;
+use crate::PoiseContext;
 use anyhow::Context;
 use lazy_static::lazy_static;
 use log::info;
@@ -54,7 +54,7 @@ lazy_static! {
 
 /// Respond with a random movie quote
 #[poise::command(slash_command)]
-pub async fn movie_quote(ctx: CommandContext<'_>) -> anyhow::Result<()> {
+pub async fn movie_quote(ctx: PoiseContext<'_>) -> anyhow::Result<()> {
     let corpus_choice;
     let memorable_quote;
     let quote_pair;

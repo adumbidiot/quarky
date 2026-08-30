@@ -1,5 +1,5 @@
 use crate::{
-    CommandContext,
+    PoiseContext,
     RedditClientKey,
 };
 use anyhow::Context;
@@ -138,8 +138,8 @@ impl RedditClient {
 /// Get a random post from a subreddit
 #[poise::command(slash_command)]
 pub async fn reddit(
-    ctx: CommandContext<'_>,
-    #[description = "the subreddit to get an image from"] subreddit: String,
+    ctx: PoiseContext<'_>,
+    #[description = "The subreddit to get an image from"] subreddit: String,
 ) -> anyhow::Result<()> {
     let blacklist = ["gayporn"];
     if blacklist.contains(&subreddit.as_str()) {

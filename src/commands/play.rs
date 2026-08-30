@@ -1,5 +1,5 @@
 use crate::{
-    CommandContext,
+    PoiseContext,
     ReqwestClientKey,
 };
 use songbird::input::YoutubeDl;
@@ -7,7 +7,7 @@ use songbird::input::YoutubeDl;
 /// Play audio from youtube
 #[poise::command(slash_command)]
 pub async fn play(
-    ctx: CommandContext<'_>,
+    ctx: PoiseContext<'_>,
     #[description = "The url to play from"] url: String,
 ) -> anyhow::Result<()> {
     let serenity_context = ctx.serenity_context();

@@ -1,8 +1,8 @@
-use crate::CommandContext;
+use crate::PoiseContext;
 
 /// Stop playing audio
 #[poise::command(slash_command)]
-pub async fn stop(ctx: CommandContext<'_>) -> anyhow::Result<()> {
+pub async fn stop(ctx: PoiseContext<'_>) -> anyhow::Result<()> {
     let maybe_guild_id = ctx.guild_id();
 
     let guild_id = match maybe_guild_id {

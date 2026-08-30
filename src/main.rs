@@ -4,6 +4,7 @@ mod cli_options;
 mod commands;
 mod config;
 mod logger;
+mod poise_data;
 
 use self::{
     cli_options::CliOptions,
@@ -13,6 +14,7 @@ use self::{
         *,
     },
     config::Config,
+    poise_data::PoiseData as PoiseDataInner,
 };
 use anyhow::Context as _;
 use clokwerk::{
@@ -30,9 +32,7 @@ use log::{
     info,
     warn,
 };
-use rand::{
-    RngExt,
-};
+use rand::RngExt;
 use serenity::{
     gateway::ActivityData,
     model::{
@@ -52,7 +52,9 @@ use std::{
 };
 use tokio::sync::Notify;
 
-pub type CommandContext<'a> = poise::Context<'a, (), anyhow::Error>;
+type PoiseData = Arc<PoiseDataInner>;
+type PoiseError = anyhow::Error;
+type PoiseContext<'a> = poise::Context<'a, PoiseData, PoiseError>;
 
 struct RedditClientKey;
 
@@ -93,7 +95,7 @@ impl EventHandler for Handler {
             }
         }
 
-        info!("choosing game state {random_number}");
+        info!("Choosing game state {random_number}");
         info!("{} is connected!", ready.user.name);
     }
 
@@ -125,16 +127,16 @@ impl EventHandler for Handler {
                                 {
                                     let manager = songbird::get(&ctx)
                                         .await
-                                        .expect("missing songbird data")
+                                        .expect("Missing songbird data")
                                         .clone();
                                     let has_handler = manager.get(channel.guild_id).is_some();
                                     if has_handler {
-                                        if let Err(e) = manager.leave(channel.guild_id).await {
-                                            warn!("failed to leave voice channel: {}", e);
+                                        if let Err(error) = manager.leave(channel.guild_id).await {
+                                            warn!("Failed to leave voice channel: {error}");
                                         }
 
-                                        if let Err(e) = manager.remove(channel.guild_id).await {
-                                            warn!("failed to remove voice channel: {}", e);
+                                        if let Err(error) = manager.remove(channel.guild_id).await {
+                                            warn!("Failed to remove voice channel: {error}");
                                         }
                                     }
                                 }
@@ -183,7 +185,7 @@ async fn schedule_robotics_reminder(
             {
                 Ok(Some(link)) => format!("{msg}\n{link}"),
                 Ok(None) => {
-                    error!("feed empty");
+                    error!("Feed empty");
                     msg
                 }
                 Err(error) => {
@@ -238,7 +240,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(())
+                Ok(Arc::new(PoiseDataInner::new()))
             })
         })
         .build();
@@ -248,7 +250,7 @@ async fn async_main(config: Config) -> anyhow::Result<()> {
         .framework(framework)
         .register_songbird()
         .await
-        .context("failed to build client")?;
+        .context("Failed to build client")?;
 
     let reddit_client = Arc::new(RedditClient::new());
     let rss_client = rss_client::Client::new();
