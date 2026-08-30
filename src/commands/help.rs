@@ -1,9 +1,9 @@
-use crate::CommandContext;
+use crate::PoiseContext;
 
 /// Get help
 #[poise::command(slash_command)]
 pub async fn help(
-    ctx: CommandContext<'_>,
+    ctx: PoiseContext<'_>,
     #[description = "Command to get help for"] mut command: Option<String>,
 ) -> anyhow::Result<()> {
     if ctx.invoked_command_name() != "help" {

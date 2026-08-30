@@ -1,9 +1,9 @@
-use crate::CommandContext;
+use crate::PoiseContext;
 use log::warn;
 
 /// Leave a voice channel
 #[poise::command(slash_command)]
-pub async fn leave(ctx: CommandContext<'_>) -> anyhow::Result<()> {
+pub async fn leave(ctx: PoiseContext<'_>) -> anyhow::Result<()> {
     let maybe_guild_id = ctx.guild_id();
     let guild_id = match maybe_guild_id {
         Some(guild_id) => guild_id,

@@ -1,8 +1,8 @@
-use crate::CommandContext;
+use crate::PoiseContext;
 
 /// Get an invite link for this bot
 #[poise::command(slash_command)]
-pub async fn invite(ctx: CommandContext<'_>) -> anyhow::Result<()> {
+pub async fn invite(ctx: PoiseContext<'_>) -> anyhow::Result<()> {
     let app_info = ctx.http().get_current_application_info().await?;
 
     let id = app_info.id;

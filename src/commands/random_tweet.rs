@@ -1,6 +1,6 @@
 use crate::{
-    CommandContext,
     NitterClientKey,
+    PoiseContext,
     RssClientKey,
 };
 use anyhow::Context as _;
@@ -47,7 +47,7 @@ async fn get_nitter_feed(
     let url = format!("{host}/{user}/media/rss");
     retry(|| client.get_feed(&url), 3)
         .await
-        .with_context(|| format!("failed to get nitter rss feed for \"{user}\" from \"{host}\""))
+        .with_context(|| format!("Failed to get nitter rss feed for \"{user}\" from \"{host}\""))
 }
 
 fn extract_id_from_nitter_url<'a>(url: &'a Url, user: &str) -> Option<&'a str> {
@@ -69,14 +69,22 @@ async fn get_random_tweet_id_nitter_rss(
     client: &rss_client::Client,
     user: &str,
 ) -> anyhow::Result<Option<String>> {
-    let feed_result = get_nitter_feed(client, "https://nitter.privacydev.net", user).await;
+    let sources = [
+        "https://nitter.cf",
+        "https://nitter.privacydev.net",
+        // Domain seems to have been taken down.
+        // "https://nitter.poast.org",
+    ];
+    let mut result: Option<Result<_, _>> = None;
+    for source in sources {
+        let source_result = get_nitter_feed(client, source, user).await;
+        if result.as_ref().is_none_or(|value| value.is_err()) {
+            result = Some(source_result);
+        }
+    }
+    let result = result.context("Missing url source")??;
 
-    let feed = match feed_result {
-        Ok(feed) => feed,
-        Err(_error) => get_nitter_feed(client, "https://nitter.poast.org", user).await?,
-    };
-
-    let entries: Vec<_> = feed
+    let entries: Vec<_> = result
         .channel
         .item
         .iter()
@@ -114,7 +122,7 @@ pub async fn get_random_tweet_url(
     nitter_client: &nitter::Client,
     user: &str,
 ) -> anyhow::Result<Option<String>> {
-    let mut tweet_id_result = Err(anyhow::Error::msg("failed to get random tweet"));
+    let mut tweet_id_result = Err(anyhow::Error::msg("Failed to get random tweet"));
     if tweet_id_result.is_err() {
         tweet_id_result = get_random_tweet_id_nitter_rss(rss_client, user).await;
     }
@@ -135,7 +143,7 @@ pub async fn get_random_tweet_url(
 /// Get a random tweet for a user
 #[poise::command(slash_command)]
 pub async fn random_tweet(
-    ctx: CommandContext<'_>,
+    ctx: PoiseContext<'_>,
     #[description = "The user"] user: String,
 ) -> anyhow::Result<()> {
     let rss_client;
@@ -151,9 +159,9 @@ pub async fn random_tweet(
 
     match get_random_tweet_url(&rss_client, &nitter_client, &user)
         .await
-        .with_context(|| format!("failed to get random tweet for \"{user}\""))
+        .with_context(|| format!("Failed to get random tweet for \"{user}\""))
         .and_then(|maybe_url| {
-            maybe_url.with_context(|| format!("no tweets retrieved for \"{user}\""))
+            maybe_url.with_context(|| format!("No tweets retrieved for \"{user}\""))
         }) {
         Ok(url) => {
             ctx.say(url).await?;

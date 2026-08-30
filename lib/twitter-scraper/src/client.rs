@@ -12,7 +12,9 @@ use std::sync::Arc;
 use url::Url;
 
 const USER_AGENT_STR: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36";
-static AUTHORIZATION_VALUE: HeaderValue = HeaderValue::from_static("Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA");
+static AUTHORIZATION_VALUE: HeaderValue = HeaderValue::from_static(
+    "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+);
 
 /// The client
 #[derive(Debug, Clone)]
@@ -98,7 +100,7 @@ impl Client {
 
         let url = Url::parse_with_params(
             &format!("https://twitter.com/i/api/graphql/{query_hash}/{name}"),
-            &[
+            [
                 ("variables", variables.as_str()),
                 ("features", features.as_str()),
             ],

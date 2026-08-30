@@ -1,19 +1,19 @@
 [package]
 name = "nitter"
 version = "0.0.0"
-edition = "2021"
+edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-reqwest = { version = "0.12.24", features = [ "http2", "gzip" ], default-features = false }
-scraper = { version = "0.24.0", default-features = false }
-thiserror = "2.0.17"
-tokio = "1.48.0"
+reqwest = { version = "0.13.4", features = [ "http2", "gzip" ], default-features = false }
+scraper = { version = "0.27.0", default-features = false }
+thiserror = "2.0.20"
+tokio = "1.53.1"
 
 [dev-dependencies]
-tokio = { version = "1.48.0", features = [ "macros" ] }
+tokio = { version = "1.53.1", features = [ "macros" ] }
 
 [features]
-default = [ "rustls-tls" ]
+default = [ "rustls" ]
 native-tls = [ "reqwest/native-tls" ]
-rustls-tls = [ "reqwest/rustls-tls" ]
+rustls = [ "reqwest/rustls" ]
