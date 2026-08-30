@@ -1,3 +1,5 @@
+#![recursion_limit = "256"]
+
 mod cli_options;
 mod commands;
 mod config;
@@ -28,7 +30,9 @@ use log::{
     info,
     warn,
 };
-use rand::Rng;
+use rand::{
+    RngExt,
+};
 use serenity::{
     gateway::ActivityData,
     model::{
@@ -196,10 +200,10 @@ async fn schedule_robotics_reminder(
 
 fn main() -> anyhow::Result<()> {
     let cli_options: CliOptions = argh::from_env();
-    eprintln!("loading config @ \"{}\"...", cli_options.config);
+    eprintln!("Loading config @ \"{}\"...", cli_options.config);
     let config = Config::load(&cli_options.config)
-        .with_context(|| format!("failed to load \"{}\"", &cli_options.config))?;
-    self::logger::setup(&config).context("failed to setup logger")?;
+        .with_context(|| format!("Failed to load \"{}\"", cli_options.config))?;
+    self::logger::setup(&config).context("Failed to setup logger")?;
 
     let tokio_runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()

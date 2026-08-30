@@ -8,7 +8,7 @@ use log::{
     info,
     warn,
 };
-use rand::Rng;
+use rand::RngExt;
 use reddit::{
     Link,
     PostHint,

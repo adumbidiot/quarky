@@ -3,15 +3,17 @@ use crate::{
     Feed,
 };
 use reqwest::header::{
-    HeaderMap,
-    HeaderValue,
     ACCEPT,
     ACCEPT_LANGUAGE,
+    HeaderMap,
+    HeaderValue,
     USER_AGENT,
 };
 use scraper::Html;
 
-static USER_AGENT_VALUE: HeaderValue = HeaderValue::from_static("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36");
+static USER_AGENT_VALUE: HeaderValue = HeaderValue::from_static(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+);
 static ACCEPT_VALUE: HeaderValue = HeaderValue::from_static("*/*");
 static ACCEPT_LANGUAGE_VALUE: HeaderValue = HeaderValue::from_static("en-US,en;q=0.9");
 

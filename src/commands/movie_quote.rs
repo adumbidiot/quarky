@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 use log::info;
 use rand::{
     prelude::IndexedRandom,
-    Rng,
+    RngExt,
 };
 
 // Note: The Corpus is untouched aside from me removing non-utf8 bytes and converting the line endings to LF

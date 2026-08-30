@@ -4,8 +4,8 @@ pub mod model;
 pub use self::{
     client::Client,
     model::{
-        feed::FromHtmlError as InvalidFeedError,
         Feed,
+        feed::FromHtmlError as InvalidFeedError,
     },
 };
 
